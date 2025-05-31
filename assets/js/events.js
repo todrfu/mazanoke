@@ -24,6 +24,7 @@ function initDropZone() {
 
   fileInput.addEventListener("change", compressingGuard((e) => {
     if (fileInput.files?.length) {
+      // Compress image from input field file.
       compressImage(e);
       fileInput.value = "";
     }
@@ -51,6 +52,7 @@ function initDropZone() {
     toggleDragging(false);
     if (e.dataTransfer.files?.length) {
       fileInput.files = e.dataTransfer.files;
+      // Compress image from dropped image.
       compressImage({ target: fileInput }, true);
       fileInput.value = "";
     }
@@ -114,6 +116,7 @@ function handlePasteImage(e) {
   }
 
   if (files.length) {
+    // Compress image from clipboard pasted image.
     compressImage({ target: { files } });
   }
 }

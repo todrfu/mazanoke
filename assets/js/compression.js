@@ -1,93 +1,21 @@
-async function preProcessImage(file) {
-  let preProcessedImage = null;
-  let preProcessedNewFileType = null;
 
-  if (file.type === "image/heic" || file.type === "image/heif" || isHeicExt(file)) {
-    console.log('Pre-processing HEIC image...')
+function compressImage(event) {
+  // Entry point for image compression
+  state.controller = new AbortController();
+  state.compressQueue = Array.from(event.target.files);
+  state.compressQueueTotal = state.compressQueue.length;
+  state.compressProcessedCount = 0;
+  state.fileProgressMap = {};
+  state.isCompressing = true;
+  
+  document.body.classList.add("compressing--is-active");
+  ui.actions.dropZone.classList.add("hidden");
+  ui.actions.abort.classList.remove("hidden");
+  ui.progress.container.classList.remove("hidden");
+  ui.progress.text.innerHTML = `Preparing<span class="loading-dots">`;
 
-    preProcessedImage = await HeicTo({
-      blob: file,
-      type: "image/jpeg",
-      quality: 0.9,
-    });
-
-    console.log("preProcessedImage: ", preProcessedImage);
-
-    preProcessedNewFileType = "image/jpeg";
-  }
-
-  if (file.type === "image/avif") {
-    console.log('Pre-processing AVIF image...')
-
-    setTimeout(() => {
-      ui.progress.text.innerHTML = `Please wait. AVIF files may take longer to prepare<span class="loading-dots">`;
-    }, 5000);
-
-    preProcessedImage = await imageCompression(file, {
-      quality: 0.8,
-      fileType: "image/jpeg",
-      useWebWorker: true,
-      preserveExif: false,
-      libURL: "./browser-image-compression.js",
-      alwaysKeepResolution: true,
-    });
-
-    preProcessedNewFileType = "image/jpeg";
-  }
-
-  return { preProcessedImage, preProcessedNewFileType };
+  compressImageQueue();
 }
-
-async function createCompressionOptions(onProgress, file) {
-  const compressMethod = getCheckedValue(ui.inputs.compressMethod);
-  const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
-  const maxWeight = parseFloat(ui.inputs.limitWeight.value);
-  const { selectedFormat } = getFileType(file);
-
-  quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
-
-  console.log("Input image file size: ", (file.size / 1024 / 1024).toFixed(3), "MB");
-
-  let maxWeightMB = ui.inputs.limitWeightUnit.value.toUpperCase() === "KB" ? 
-    ui.inputs.limitWeight.value / 1024 : 
-    ui.inputs.limitWeight.value;
-
-  let limitDimensionsValue = undefined;
-
-  if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
-    if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
-      limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
-    }
-    else {
-      limitDimensionsValue = undefined;
-    }
-  }
-  else {
-    limitDimensionsValue = dimensionMethod === "limit" ? 
-      await getAdjustedDimensions(file, ui.inputs.limitDimensions.value) : 
-      undefined;
-  }
-
-
-  const options = {
-    maxSizeMB: maxWeight && compressMethod === "limitWeight" ? maxWeightMB : (file.size / 1024 / 1024).toFixed(3),
-    initialQuality: quality && compressMethod === "quality" ? quality : undefined,
-    maxWidthOrHeight: limitDimensionsValue,
-    useWebWorker: true,
-    onProgress,
-    preserveExif: false,
-    fileType: selectedFormat || undefined,
-    libURL: "./browser-image-compression.js",
-    alwaysKeepResolution: true,
-  };
-  if (state.controller) {
-    options.signal = state.controller.signal;
-  }
-
-  console.log("Settings:", options);
-  return options;
-}
-
 
 async function compressImageQueue() {
   if (!state.compressQueue.length) {
@@ -158,23 +86,112 @@ async function compressImageQueue() {
   }
 }
 
-function compressImage(event) {
-  state.controller = new AbortController();
-  state.compressQueue = Array.from(event.target.files);
-  state.compressQueueTotal = state.compressQueue.length;
-  state.compressProcessedCount = 0;
-  state.fileProgressMap = {};
-  state.isCompressing = true;
-  
-  document.body.classList.add("compressing--is-active");
-  ui.actions.dropZone.classList.add("hidden");
-  ui.actions.abort.classList.remove("hidden");
-  ui.progress.container.classList.remove("hidden");
-  ui.progress.text.innerHTML = `Preparing<span class="loading-dots">`;
+async function preProcessImage(file) {
+  let preProcessedImage = null;
+  let preProcessedNewFileType = null;
 
-  compressImageQueue();
+  if (file.type === "image/heic" || file.type === "image/heif" || isHeicExt(file)) {
+    // Pre-process HEIC and HEIF images.
+    // HEIC/HEIF is not natively parsable by browsers.
+    console.log('Pre-processing HEIC image...')
+
+    preProcessedImage = await HeicTo({
+      blob: file,
+      type: "image/jpeg",
+      quality: 0.9,
+    });
+
+    console.log("preProcessedImage: ", preProcessedImage);
+
+    preProcessedNewFileType = "image/jpeg";
+  }
+
+  if (file.type === "image/avif") {
+    // Pre-process AVIF images.
+    // AVIF is already highly optimized and requires more lossy compression to reduce weight of file.
+    console.log('Pre-processing AVIF image...')
+
+    setTimeout(() => {
+      ui.progress.text.innerHTML = `Please wait. AVIF files may take longer to prepare<span class="loading-dots">`;
+    }, 5000);
+
+    preProcessedImage = await imageCompression(file, {
+      quality: 0.8,
+      fileType: "image/jpeg",
+      useWebWorker: true,
+      preserveExif: false,
+      libURL: "./browser-image-compression.js",
+      alwaysKeepResolution: true,
+    });
+
+    preProcessedNewFileType = "image/jpeg";
+  }
+
+
+  if (file.type === "image/vnd.microsoft.icon" || file.type === "image/x-icon") {
+    // Pre-process ICO images.
+    // ICO is not natively parsable by all browsers.
+    const arrayBuffer = await file.arrayBuffer();
+    if (ICO.isICO(arrayBuffer)) {
+      const parsedICO = await ICO.parseICO(arrayBuffer);
+      const rawImage = parsedICO[0];
+      preProcessedImage = await rawImageDataToBlob(rawImage.data, rawImage.width, rawImage.height);
+      preProcessedNewFileType = "image/png";
+    }
+  }
+
+  return { preProcessedImage, preProcessedNewFileType };
 }
 
+async function createCompressionOptions(onProgress, file) {
+  const compressMethod = getCheckedValue(ui.inputs.compressMethod);
+  const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
+  const maxWeight = parseFloat(ui.inputs.limitWeight.value);
+  const { selectedFormat } = getFileType(file);
+
+  quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
+
+  console.log("Input image file size: ", (file.size / 1024 / 1024).toFixed(3), "MB");
+
+  let maxWeightMB = ui.inputs.limitWeightUnit.value.toUpperCase() === "KB" ? 
+    ui.inputs.limitWeight.value / 1024 : 
+    ui.inputs.limitWeight.value;
+
+  let limitDimensionsValue = undefined;
+
+  if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
+    if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
+      limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
+    }
+    else {
+      limitDimensionsValue = undefined;
+    }
+  }
+  else {
+    limitDimensionsValue = dimensionMethod === "limit" ? 
+      await getAdjustedDimensions(file, ui.inputs.limitDimensions.value) : 
+      undefined;
+  }
+
+
+  const options = {
+    maxSizeMB: maxWeight && compressMethod === "limitWeight" ? maxWeightMB : (file.size / 1024 / 1024).toFixed(3),
+    initialQuality: quality && compressMethod === "quality" ? quality : undefined,
+    maxWidthOrHeight: limitDimensionsValue,
+    useWebWorker: true,
+    onProgress,
+    preserveExif: false,
+    fileType: selectedFormat || undefined,
+    libURL: "./browser-image-compression.js",
+    alwaysKeepResolution: true,
+  };
+  if (state.controller) {
+    options.signal = state.controller.signal;
+  }
+
+  console.log("Settings:", options);
+  return options;
+}
 
 function handleCompressionResult(file, output) {
   const { outputFileExtension, selectedFormat } = getFileType(file);

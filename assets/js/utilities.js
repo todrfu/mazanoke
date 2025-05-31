@@ -17,6 +17,8 @@ function isFileTypeSupported(fileType, file) {
     "image/gif",
     "image/svg+xml",
     "image/jxl",
+    "image/vnd.microsoft.icon",
+    "image/x-icon",
   ];
 
   return supportedFileTypes.includes(fileType);
@@ -33,6 +35,9 @@ function mimeToExtension(mimeType) {
     "image/gif": "gif",
     "image/svg+xml": "svg",
     "image/jxl": "jxl",
+    "image/vnd.microsoft.icon": "ico",
+    "image/x-icon": "ico",
+    
   };
 
   return (
@@ -49,7 +54,8 @@ function defaultConversionMapping(mimeType) {
     "image/avif": "image/png",
     "image/gif": "image/png",
     "image/svg+xml": "image/png",
-    "image/jxl": "image/png",
+    "image/vnd.microsoft.icon": "image/png",
+    "image/x-icon": "image/png",
   };
 
   console.log('Input mimeType ', mimeType);
@@ -193,6 +199,18 @@ function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
       const limitDimensionsValue = desiredLimitDimensions > Math.ceil(minAllowedDimension) ? desiredLimitDimensions : Math.ceil(minAllowedDimension);
       resolve(limitDimensionsValue);
     });
+  });
+}
+
+function rawImageDataToBlob(data, width, height, type = 'image/png') {
+  return new Promise((resolve) => {
+    const imageData = new ImageData(new Uint8ClampedArray(data), width, height);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.putImageData(imageData, 0, 0);
+    canvas.toBlob(resolve, type);
   });
 }
 
