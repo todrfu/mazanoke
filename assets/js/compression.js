@@ -52,7 +52,6 @@ async function compressImageQueue() {
   }
 
   imageCompression((preProcessedImage || file), options)
-    .then((output) => postProcessImage(file, output))
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
     .finally(() => {
