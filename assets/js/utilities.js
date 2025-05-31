@@ -202,7 +202,7 @@ function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
   });
 }
 
-function rawImageDataToBlob(data, width, height, type = 'image/png') {
+function imageDataToBlob(data, width, height, type = 'image/png') {
   return new Promise((resolve) => {
     const imageData = new ImageData(new Uint8ClampedArray(data), width, height);
     const canvas = document.createElement('canvas');

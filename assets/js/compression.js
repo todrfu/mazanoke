@@ -2,7 +2,7 @@
  * Adding support for more image formats
  * =====================================
  * 1. Update accepted file types in the HTML input: `<input id="compress" type="file" accept="...">`.
- * 2. Register the new mime types in utility `utilities.js`: `isFileTypeSupported()`, `mimeToExtension()`.  
+ * 2. Register the new mime types in: `isFileTypeSupported()`, `mimeToExtension()`.  
  * 3. Preprocess to canvas-compatible blob in `preProcessImage()`, before compression `compressImageQueue()`.
  */
 
@@ -51,7 +51,8 @@ async function compressImageQueue() {
     options.fileType = preProcessedNewFileType;
   }
 
-  imageCompression(preProcessedImage || file, options)
+  imageCompression((preProcessedImage || file), options)
+    .then((output) => postProcessImage(file, output))
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
     .finally(() => {
@@ -143,7 +144,7 @@ async function preProcessImage(file) {
     if (ICO.isICO(arrayBuffer)) {
       const parsedICO = await ICO.parseICO(arrayBuffer);
       const rawImage = parsedICO[0];
-      preProcessedImage = await rawImageDataToBlob(rawImage.data, rawImage.width, rawImage.height);
+      preProcessedImage = await imageDataToBlob(rawImage.data, rawImage.width, rawImage.height);
       preProcessedNewFileType = "image/png";
     }
   }

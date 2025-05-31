@@ -17,6 +17,13 @@ MAZANOKE would not be possible without the projects listed here.
 - **Version**: v1.1.12
 - **Usage**: Decoding HEIC file types.
 
+### icojs
+- **Author:** egy186
+- **License**: [MIT License](https://github.com/egy186/icojs/blob/main/LICENSE)  
+- **Source**: https://github.com/egy186/icojs
+- **Version**: v0.19.5
+- **Usage**: Parsing ICO files type.
+
 ### JSZip
 - **Author:** Stuart Knightley
 - **License**: [GNU General Public License v3.0](https://github.com/Stuk/jszip/blob/main/LICENSE.markdown)  

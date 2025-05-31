@@ -14,6 +14,11 @@ curl -o assets/vendor/browser-image-compression.js https://raw.githubusercontent
 curl -o assets/vendor/heic-to.js https://raw.githubusercontent.com/hoppergee/heic-to/refs/heads/main/dist/iife/heic-to.js
 ```
 
+**`ico.js`**:
+```
+curl -o assets/vendor/ico.js https://unpkg.com/icojs/dist/ico.js
+```
+
 **`jszip.js`**:
 ```
 curl -o assets/vendor/jszip.js https://raw.githubusercontent.com/Stuk/jszip/refs/heads/main/dist/jszip.min.js
