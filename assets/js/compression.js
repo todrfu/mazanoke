@@ -1,3 +1,11 @@
+/**
+ * Adding support for more image formats
+ * =====================================
+ * 1. Update accepted file types in the HTML input: `<input id="compress" type="file" accept="...">`.
+ * 2. Register the new mime types in utility `utilities.js`: `isFileTypeSupported()`, `mimeToExtension()`.  
+ * 3. Preprocess to canvas-compatible blob in `preProcessImage()`, before compression `compressImageQueue()`.
+ */
+
 
 function compressImage(event) {
   // Entry point for image compression
