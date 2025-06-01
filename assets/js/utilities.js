@@ -213,33 +213,6 @@ function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
   });
 }
 
-function decodePNGToBlob(pngBuffer) {
-  return new Promise((resolve, reject) => {
-    const blob = new Blob([pngBuffer], { type: 'image/png' });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob((resultBlob) => {
-        URL.revokeObjectURL(url);
-        resolve(resultBlob);
-      }, 'image/png');
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image'));
-    };
-
-    img.src = url;
-  });
-}
-
 function debugBlobImageOutput(blob) {
   const blobURL = URL.createObjectURL(blob);
   const img = document.createElement("img");
