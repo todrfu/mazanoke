@@ -19,6 +19,19 @@ curl -o assets/vendor/heic-to.js https://raw.githubusercontent.com/hoppergee/hei
 curl -o assets/vendor/ico.js https://unpkg.com/icojs/dist/ico.js
 ```
 
+**`png2ico.js`**:
+```
+curl -o assets/vendor/png2ico.js https://raw.githubusercontent.com/datvm/PNG2ICOjs/refs/heads/master/src/png2icojs.js
+
+# png2ico.js does not work on vanilla javascript by default as it's an ES module.
+
+# On Linux, remove '' from sed -i. On macOS, keep it.
+sed -i '' 's/^export class/class/' assets/vendor/png2ico.js
+
+# Convert to global script by exposing its class globally.
+echo "\nwindow.PngIcoConverter = PngIcoConverter;" >> assets/vendor/png2ico.js
+```
+
 **`jszip.js`**:
 ```
 curl -o assets/vendor/jszip.js https://raw.githubusercontent.com/Stuk/jszip/refs/heads/main/dist/jszip.min.js

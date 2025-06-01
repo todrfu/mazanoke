@@ -4,6 +4,7 @@
  * 1. Update accepted file types in the HTML input: `<input id="compress" type="file" accept="...">`.
  * 2. Register the new mime types in: `isFileTypeSupported()`, `mimeToExtension()`.  
  * 3. Preprocess to canvas-compatible blob in `preProcessImage()`, before compression `compressImageQueue()`.
+ * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to encoded in postProcessImage().
  */
 
 
@@ -46,19 +47,17 @@ async function compressImageQueue() {
 
   const options = await createCompressionOptions((p) => onProgress(p, i, file.name), file);
   const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
+  const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
 
   if (preProcessedImage) {
     options.fileType = preProcessedNewFileType;
   }
-
-  const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
+  if (isPostProcessingRequired(selectedFormat)) {
+    options.fileType = 'image/png';
+  }
 
   imageCompression((preProcessedImage || file), options)
-    .then(output => 
-      isPostProcessingRequired(selectedFormat)
-        ? postProcessImage(output)
-        : Promise.resolve(output)
-    )
+    .then((output) => postProcessImage(output, selectedFormat))
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
     .finally(() => {
@@ -68,7 +67,6 @@ async function compressImageQueue() {
       if (state.compressProcessedCount < state.compressQueueTotal) {
         compressImageQueue();
       }
-
     });
 
   function onProgress(p, index, fileName) {
@@ -157,17 +155,51 @@ async function preProcessImage(file) {
   return { preProcessedImage, preProcessedNewFileType };
 }
 
-async function postProcessImage(file) {
+async function postProcessImage(file, selectedFormat) {
   console.log('Post-processing...');
-  // TODO 2025-06-01: Currently only JPG, WebP, PNG are available output format, no post-processing needed yet. 
-  return file
+  if (selectedFormat === "image/vnd.microsoft.icon" || selectedFormat === "image/x-icon") {
+    file = await postProcessToICO(file);
+  }
+
+  return file;
+}
+
+async function postProcessToICO(pngFile) {
+  const converter = new PngIcoConverter();
+  const inputs = [{ png: pngFile, ignoreSize: true }];
+  let icoFile;
+
+  try {
+    icoFile = await converter.convertToBlobAsync(inputs, 'image/vnd.microsoft.icon');
+  } catch (e) {
+    console.error(e);
+    const msg = e.message;
+    if (msg) {
+      alert("Error post-processing to ICO: " + (ErrorMessages[msg] ?? msg));
+    }
+  }
+
+  return icoFile;
 }
 
 async function createCompressionOptions(onProgress, file) {
   const compressMethod = getCheckedValue(ui.inputs.compressMethod);
   const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
   const maxWeight = parseFloat(ui.inputs.limitWeight.value);
-  let { selectedFormat } = getFileType(file);
+  let { inputFileType, selectedFormat } = getFileType(file);
+
+  if (isPostProcessingRequired(selectedFormat)) {
+    /**
+     * The chosen output format isn't directly supported by browsers,
+     * so compression can't be done in that format.
+     * Instead, compress using a browser-supported image type,
+     * then convert to the user-selected format in `postProcessImage()`.
+     */
+    const browserSupportedImageTypes = ["image/jpeg", "image/png", "image/webp"];
+    const isSupported = browserSupportedImageTypes.includes(inputFileType);
+    
+    selectedFormat = isSupported ? inputFileType : "image/png";
+  }
 
   quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
 
@@ -180,6 +212,15 @@ async function createCompressionOptions(onProgress, file) {
   let limitDimensionsValue = undefined;
 
   if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
+    /**
+     * TODO 2025-06-01: Remove arbitrary 50px limit for HEIC images when using "limit dimension".
+     * 
+     * Currently, HEIC dimensions aren't available during options setup since they require decoding first.
+     * This workaround prevents resizing to below the image’s smallest long edge while preserving aspect ratio.
+     * 
+     * Once decoded, compare the smallest long edge with the user-defined "limit dimension"
+     * and use the larger value to ensure valid resizing.
+     */
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
       limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
     }

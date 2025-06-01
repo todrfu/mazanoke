@@ -203,7 +203,7 @@ function setConvertMethod(value) {
   ui.inputs.formatSelect.forEach(input => {
     input.checked = input.value === value;
   });
-  
+
   ui.groups.formatMethod.querySelectorAll(".button-card-radio").forEach(el => {
     el.classList.remove("button-card-radio--is-selected");
   });

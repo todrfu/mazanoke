@@ -108,10 +108,10 @@ function getFileType(file) {
   }
 
   return {
-    inputFileType,
-    inputFileExtension,
-    outputFileExtension,
-    selectedFormat
+    inputFileType,        // E.g. "image/jpeg"
+    inputFileExtension,   // E.g. "jpg"
+    outputFileExtension,  // E.g. "webp"
+    selectedFormat        // E.g. "image/webp"
   };
 }
 
