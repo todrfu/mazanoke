@@ -51,7 +51,14 @@ async function compressImageQueue() {
     options.fileType = preProcessedNewFileType;
   }
 
+  const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
+
   imageCompression((preProcessedImage || file), options)
+    .then(output => 
+      isPostProcessingRequired(selectedFormat)
+        ? postProcessImage(output)
+        : Promise.resolve(output)
+    )
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
     .finally(() => {
@@ -135,7 +142,6 @@ async function preProcessImage(file) {
     preProcessedNewFileType = "image/jpeg";
   }
 
-
   if (file.type === "image/vnd.microsoft.icon" || file.type === "image/x-icon") {
     // Pre-process ICO images.
     // ICO is not natively parsable by all browsers.
@@ -151,11 +157,17 @@ async function preProcessImage(file) {
   return { preProcessedImage, preProcessedNewFileType };
 }
 
+async function postProcessImage(file) {
+  console.log('Post-processing...');
+  // TODO 2025-06-01: Currently only JPG, WebP, PNG is available as output, no post-processing needed yet. 
+  return file
+}
+
 async function createCompressionOptions(onProgress, file) {
   const compressMethod = getCheckedValue(ui.inputs.compressMethod);
   const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
   const maxWeight = parseFloat(ui.inputs.limitWeight.value);
-  const { selectedFormat } = getFileType(file);
+  let { selectedFormat } = getFileType(file);
 
   quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
 

@@ -24,6 +24,16 @@ function isFileTypeSupported(fileType, file) {
   return supportedFileTypes.includes(fileType);
 }
 
+function isPostProcessingRequired(targetOutputfileType) {
+
+  const postProcessingTypes = [
+    "image/vnd.microsoft.icon",
+    "image/x-icon",
+  ];
+
+  return postProcessingTypes.includes(targetOutputfileType);
+}
+
 function mimeToExtension(mimeType) {
   const fileExtensionMap = {
     "image/jpeg": "jpg",
@@ -37,7 +47,6 @@ function mimeToExtension(mimeType) {
     "image/jxl": "jxl",
     "image/vnd.microsoft.icon": "ico",
     "image/x-icon": "ico",
-    
   };
 
   return (
@@ -77,7 +86,8 @@ function isFileExt(file, extension = "") {
 }
 
 function getFileType(file) {
-  let selectedFormat = document.querySelector('input[name="formatSelect"]:checked').value; // User-selected format to convert to, e.g. "image/jpeg".
+  let selectedFormat = getCheckedValue(ui.inputs.formatSelect); // User-selected format to convert to, e.g. "image/jpeg".
+  let inputFileType = file.type; // User-uploaded image's mime, e.g. `image/jpeg`.
   let inputFileExtension = ""; // User-uploaded image's file extension, e.g. `.jpg`.
   let outputFileExtension = ""; // The processed image's file extension, based on `defaultConversionMapping()`.
 
@@ -98,11 +108,43 @@ function getFileType(file) {
   }
 
   return {
+    inputFileType,
     inputFileExtension,
     outputFileExtension,
-    selectedFormat,
+    selectedFormat
   };
 }
+
+/* function getProcessingFileType(fileType) {
+  // Map input file type to supported one for `preProcessImage()`, prepare output file type for `postProcessImage()`.
+  if (!isFileTypeSupported(preProcessFileType) || !isFileTypeSupported(postProcessFileType)) {
+    throw new Error('Unsupported file type(s)');
+  }
+
+  let selectedFormat = getCheckedValue(ui.inputs.formatSelect);
+
+  else if (isPostProcessingRequired(fileType)) {
+    fileFormat = mimeToExtension(fileType);
+    return { fileFormat }
+  }
+  else {
+    fileFormat = selectedFormat;
+    postProcessFormat = null; // Post-processing is not needed
+    return { fileFormat, postProcessFormat}
+  }
+
+
+
+  let preProcessFileType = preProcessFileType;
+  let postProcessFileType = selectedFormat;
+
+  if (preProcessFileType === 'ico') {
+    alert("it's ICO");
+  }
+
+  return {preProcessFileType, postProcessFileType}
+} */
+
 
 function updateFileExtension(originalName, fileExtension, selectedFormat) {
   const baseName = originalName.replace(/\.[^/.]+$/, "");
