@@ -4,7 +4,7 @@
  * 1. Update accepted file types in the HTML input: `<input id="compress" type="file" accept="...">`.
  * 2. Register the new mime types in: `isFileTypeSupported()`, `mimeToExtension()`.  
  * 3. Preprocess to canvas-compatible blob in `preProcessImage()`, before compression `compressImageQueue()`.
- * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to be encoded in postProcessImage().
+ * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to be encoded in `postProcessImage()`.
  */
 
 /**

@@ -27,6 +27,11 @@ function isFileTypeSupported(fileType, file) {
 function isPostProcessingRequired(targetOutputfileType) {
 
   const postProcessingTypes = [
+    /**
+     * Add mime types which browsers cannot natively output
+     * and requires custom encoding to handle the final image file.
+     * Implement the handling in `postProcessImage()`.
+     */
     "image/vnd.microsoft.icon",
     "image/x-icon",
   ];
@@ -137,9 +142,11 @@ function appendFileNameId(fileName = "image") {
 }
 
 function renameBrowserDefaultFileName(fileName) {
-  // Naive approach to check if an image was pasted from clipboard and received a default name by the browser,
-  // e.g., `image.png`. This method is potentially browser and language-dependent, if naming conventions vary.
-  // `HEIF Image.heic` concerns iOS devices, e.g. when drag-and-dropping a subject cut-out.
+  /**
+   * Naive approach to check if an image was pasted from clipboard and received a default name by the browser,
+   * e.g., `image.png`. This method is potentially browser and language-dependent, if naming conventions vary.
+   * `HEIF Image.heic` concerns iOS devices, e.g. when drag-and-dropping a subject cut-out.
+   */ 
   const defaultNames = [/^image\.\w+$/i, /^heif image\.heic$/i];
 
   if (defaultNames.some(regex => regex.test(fileName))) {
