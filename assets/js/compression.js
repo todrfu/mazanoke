@@ -4,11 +4,10 @@
  * 1. Update accepted file types in the HTML input: `<input id="compress" type="file" accept="...">`.
  * 2. Register the new mime types in: `isFileTypeSupported()`, `mimeToExtension()`.  
  * 3. Preprocess to canvas-compatible blob in `preProcessImage()`, before compression `compressImageQueue()`.
- * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to encoded in postProcessImage().
+ * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to be encoded in postProcessImage().
  */
 
 /**
- * TODO 2025-06-01: Handle ICO -> ICO compression.
  * TODO 2025-06-01: Fix thumbnails not showing for ICO output files. Thumbnail needs to be generated in early stages and passed.
  */
 
