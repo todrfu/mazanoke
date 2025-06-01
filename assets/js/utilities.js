@@ -115,37 +115,6 @@ function getFileType(file) {
   };
 }
 
-/* function getProcessingFileType(fileType) {
-  // Map input file type to supported one for `preProcessImage()`, prepare output file type for `postProcessImage()`.
-  if (!isFileTypeSupported(preProcessFileType) || !isFileTypeSupported(postProcessFileType)) {
-    throw new Error('Unsupported file type(s)');
-  }
-
-  let selectedFormat = getCheckedValue(ui.inputs.formatSelect);
-
-  else if (isPostProcessingRequired(fileType)) {
-    fileFormat = mimeToExtension(fileType);
-    return { fileFormat }
-  }
-  else {
-    fileFormat = selectedFormat;
-    postProcessFormat = null; // Post-processing is not needed
-    return { fileFormat, postProcessFormat}
-  }
-
-
-
-  let preProcessFileType = preProcessFileType;
-  let postProcessFileType = selectedFormat;
-
-  if (preProcessFileType === 'ico') {
-    alert("it's ICO");
-  }
-
-  return {preProcessFileType, postProcessFileType}
-} */
-
-
 function updateFileExtension(originalName, fileExtension, selectedFormat) {
   const baseName = originalName.replace(/\.[^/.]+$/, "");
   const newExtension = selectedFormat

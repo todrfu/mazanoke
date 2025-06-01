@@ -159,7 +159,7 @@ async function preProcessImage(file) {
 
 async function postProcessImage(file) {
   console.log('Post-processing...');
-  // TODO 2025-06-01: Currently only JPG, WebP, PNG is available as output, no post-processing needed yet. 
+  // TODO 2025-06-01: Currently only JPG, WebP, PNG are available output format, no post-processing needed yet. 
   return file
 }
 
