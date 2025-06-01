@@ -7,6 +7,10 @@
  * 4. If the selectedFormat output is not JPG, WebP, or PNG, it needs to encoded in postProcessImage().
  */
 
+/**
+ * TODO 2025-06-01: Handle ICO -> ICO compression.
+ * TODO 2025-06-01: Fix thumbnails not showing for ICO output files. Thumbnail needs to be generated in early stages and passed.
+ */
 
 function compressImage(event) {
   // Entry point for image compression
@@ -141,13 +145,13 @@ async function preProcessImage(file) {
   }
 
   if (file.type === "image/vnd.microsoft.icon" || file.type === "image/x-icon") {
-    // Pre-process ICO images.
-    // ICO is not natively parsable by all browsers.
     const arrayBuffer = await file.arrayBuffer();
+
     if (ICO.isICO(arrayBuffer)) {
-      const parsedICO = await ICO.parseICO(arrayBuffer);
+      const parsedICO = await ICO.parseICO(arrayBuffer, 'image/png');
       const rawImage = parsedICO[0];
-      preProcessedImage = await imageDataToBlob(rawImage.data, rawImage.width, rawImage.height);
+
+      preProcessedImage = await decodePNGToBlob(rawImage.buffer);
       preProcessedNewFileType = "image/png";
     }
   }
@@ -233,7 +237,6 @@ async function createCompressionOptions(onProgress, file) {
       await getAdjustedDimensions(file, ui.inputs.limitDimensions.value) : 
       undefined;
   }
-
 
   const options = {
     maxSizeMB: maxWeight && compressMethod === "limitWeight" ? maxWeightMB : (file.size / 1024 / 1024).toFixed(3),
