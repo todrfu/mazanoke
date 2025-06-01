@@ -24,6 +24,13 @@ MAZANOKE would not be possible without the projects listed here.
 - **Version**: v0.19.5
 - **Usage**: Parsing ICO files type.
 
+### PNG2ICOjs
+- **Author:** Luke Vo
+- **License**: [GNU General Public License v3.0](https://github.com/datvm/PNG2ICOjs/blob/master/LICENSE)  
+- **Source**: https://github.com/datvm/PNG2ICOjs
+- **Version**: 1.0.1
+- **Usage**: Encoding ICO files type.
+
 ### JSZip
 - **Author:** Stuart Knightley
 - **License**: [GNU General Public License v3.0](https://github.com/Stuk/jszip/blob/main/LICENSE.markdown)  
