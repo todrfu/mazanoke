@@ -90,11 +90,22 @@ function isFileExt(file, extension = "") {
   return fileName.endsWith(`.${extension}`);
 }
 
+/**
+ * Determines the input and output file types and extensions based on the user-uploaded file
+ * and the user-selected target format.
+ *
+ * @param {File} file - Image file object.
+ * @returns {Object} An object containing:
+ *   @property {string} inputFileType - The mime type of the uploaded file (e.g., "image/jpeg").
+ *   @property {string} inputFileExtension - The file extension of the uploaded file (e.g., "jpg").
+ *   @property {string} outputFileExtension - The target file extension after compression (e.g., "webp").
+ *   @property {string} selectedFormat - The mime type of the user-selected output format (e.g., "image/webp").
+ */
 function getFileType(file) {
-  let selectedFormat = getCheckedValue(ui.inputs.formatSelect); // User-selected format to convert to, e.g. "image/jpeg".
-  let inputFileType = file.type; // User-uploaded image's mime, e.g. `image/jpeg`.
-  let inputFileExtension = ""; // User-uploaded image's file extension, e.g. `.jpg`.
-  let outputFileExtension = ""; // The processed image's file extension, based on `defaultConversionMapping()`.
+  let selectedFormat = getCheckedValue(ui.inputs.formatSelect);
+  let inputFileType = file.type;
+  let inputFileExtension = "";
+  let outputFileExtension = "";
 
   if (selectedFormat && selectedFormat !== "default") {
     // The user-selected format to convert to.
@@ -103,8 +114,8 @@ function getFileType(file) {
     outputFileExtension = extension;
   } else {
     // User has not selected a file format, use the input image's file type.
-    selectedFormat = file.type ? file.type : "png";
-    file.type = !file.type && isHeicExt(file) ? "image/heic" : "";
+    selectedFormat = file.type || "png";
+    file.type = !file.type && isHeicExt(file) ? "image/heic" : file.type;
     inputFileExtension = mimeToExtension(file.type) || "";
 
     console.log("inputFileExtension: ", inputFileExtension);
@@ -113,10 +124,10 @@ function getFileType(file) {
   }
 
   return {
-    inputFileType,        // E.g. "image/jpeg"
-    inputFileExtension,   // E.g. "jpg"
-    outputFileExtension,  // E.g. "webp"
-    selectedFormat        // E.g. "image/webp"
+    inputFileType,
+    inputFileExtension,
+    outputFileExtension,
+    selectedFormat,
   };
 }
 
