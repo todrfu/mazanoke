@@ -23,8 +23,8 @@ curl -o assets/vendor/ico.js https://unpkg.com/icojs/dist/ico.js
 ```
 curl -o assets/vendor/png2ico.js https://raw.githubusercontent.com/datvm/PNG2ICOjs/refs/heads/master/src/png2icojs.js
 
-# PNG2ICOjs does not work on vanilla javascript by default as it's an ES module.
-# Run the commands below to adjust it to global script.
+# PNG2ICOjs does not work with vanilla JavaScript by default, as it is an ES module.
+# Run the commands below to adjust it for use as a global script.
 
 # On Linux, remove '' from sed -i. On macOS, keep it.
 sed -i '' 's/^export class/class/' assets/vendor/png2ico.js
