@@ -1,6 +1,6 @@
-window.App = window.App || {};
+window.app = window.app || {};
 
-App.ui = {
+app.ui = {
   dialogs: {
     installPWA: document.getElementById("installPWADialog"),
     updateToast: document.getElementById("updateToast"),
@@ -51,7 +51,7 @@ App.ui = {
   },
 };
 
-App.config = {
+app.config = {
   form: {
     // Default form settings
     quality: {value: 80},
@@ -86,7 +86,7 @@ App.config = {
 };
 
 
-App.state = {
+app.state = {
   controller: null,
   compressQueue: [],
   compressQueueTotal: 0,
@@ -100,15 +100,15 @@ App.state = {
   limitWeightUnit: "MB",
 };
 
-App.lib = {
-  browserImageCompression: imageCompression,
-  heicTo: window.HeicTo,
-  pngToIco: window.PngIcoConverter,
-  icoJs: window.ICO,
-  jsZip: window.JSZip
+app.lib = {
+  imageCompression: imageCompression, // Browser Image Compression
+  heicTo: window.HeicTo,              // heic-to
+  pngToIco: window.PngIcoConverter,   // PNG2ICOjs
+  icoJs: window.ICO,                  // icojs
+  jsZip: window.JSZip                 // JSZip
 };
 
-const ui = App.ui;
-const config = App.config;
-const state = App.state;
-const lib = App.lib;
+const ui = app.ui;
+const config = app.config;
+const state = app.state;
+const lib = app.lib;

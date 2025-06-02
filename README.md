@@ -36,7 +36,7 @@ Created for everyday people and designed to be shared with family and friends, i
   - On-device image processing
   - Removes EXIF data (location, date, etc.)
   - No tracking
-  - Installable web app ([learn more](#web-app))
+  - Installable web app ([learn more](./docs/install-web-app.md))
 
 **Planned**
 - [X] Upload multiple files at once
@@ -58,7 +58,7 @@ services:
     ports:
       - "3474:80"
 ```
-  - [See available environment variable configurations here](./docs/configuration.md)
+  - See available environment variables: [Configurations](./docs/configuration.md)
 1. Access the app at `http://localhost:3474`
 
 ### Local

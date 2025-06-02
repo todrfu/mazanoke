@@ -60,7 +60,7 @@ async function compressImageQueue() {
     options.fileType = 'image/png';
   }
 
-  lib.browserImageCompression((preProcessedImage || file), options)
+  lib.imageCompression((preProcessedImage || file), options)
     .then((output) => postProcessImage(output, selectedFormat))
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
@@ -132,7 +132,7 @@ async function preProcessImage(file) {
       ui.progress.text.innerHTML = `Please wait. AVIF files may take longer to prepare<span class="loading-dots">`;
     }, 5000);
 
-    preProcessedImage = await lib.browserImageCompression(file, {
+    preProcessedImage = await lib.imageCompression(file, {
       quality: 0.8,
       fileType: "image/jpeg",
       useWebWorker: true,
@@ -305,7 +305,7 @@ function handleCompressionResult(file, output) {
   const fileSizeSavedClass =
     fileSizeSaved <= 0 ? "badge--error" : "badge--success";
 
-  lib.browserImageCompression(output, config.thumbnailOptions).then((thumbnailBlob) => {
+  lib.imageCompression(output, config.thumbnailOptions).then((thumbnailBlob) => {
     const thumbnailDataURL = URL.createObjectURL(thumbnailBlob);
     getImageDimensions(outputImageBlob, ({ width, height }) => {
       const outputHTML = buildOutputItemHTML({
