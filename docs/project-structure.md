@@ -23,7 +23,7 @@ An outline of the project structure.
 | `ui.js`                            | User interface DOM manipulation.                                                |
 | `utilities.js`                     | Utility functions for various tasks and smaller types of processing.            |
 |                                    |                                                                                 |
-| **Vendor Libraries (`assets/vendor`)** | Third-party libraries, essential to the app's functionality.                |
+| **Vendor Libraries (`assets/vendor`)** | External libraries, essential to the app's functionality.                   |
 | `browser-image-compress.js`        | A library for browser-side image compression.                                   |
 | `heic-to.js`                       | HEIC image decoder, allowing converting to other browser-friendly file types.   |
 | `ico.js`                           | Parsing ICO files type.                                                         |
@@ -31,6 +31,7 @@ An outline of the project structure.
 | `png2ico.js`                       | Encoding ICO files type.                                                        |
 |                                    |                                                                                 |
 | **Images (`assets/images`)**       | Static images for user interface and metatags.                                  |
+| ...                                |                                                                                 |
 |                                    |                                                                                 |
 | **CSS (`assets/css`)**             | App styling.                                                                    |
 | `fonts.css`                        | Font definitions.                                                               |
@@ -38,12 +39,13 @@ An outline of the project structure.
 | `variables.css`                    | Global CSS variables for dynamic color, sizing, font, etc.                      |
 |                                    |                                                                                 |
 | **Fonts (`assets/fonts`)**         | Font files.                                                                     |
+| ...                                |                                                                                 |
 
 ## Basic App Flow
 
 To better understand the app’s flow and file interactions, the outline below describes the general image optimization process.
 
-Throughout the app, all third-party libraries are accessed via the local alias `lib` (e.g., `lib.browserImageCompression`), as defined in `global.js`. This keeps libraries organized and separate from the project’s code.
+Throughout the app, all external libraries are accessed via the local alias `lib` (e.g., `lib.browserImageCompression`), as defined in `global.js`. This keeps libraries organized and separate from the project’s code.
 
 1. `index.html` launches the app.
 1. The scripts load in a specific order to initialize global variables, references, and dependencies required by other scripts.  
