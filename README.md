@@ -50,7 +50,7 @@ Created for everyday people and designed to be shared with family and friends, i
 ### Docker
 
 1. Using [Docker Compose](https://docs.docker.com/compose/):
-```
+```yaml
 services:
   mazanoke:
     container_name: mazanoke

@@ -3,7 +3,7 @@ MAZANOKE supports configuration for deployments using Docker, allowing you to cu
 
 ## Basic Authentication
 To setup basic authentication, include both environmental variables `USERNAME` and `PASSWORD`:
-```
+```yaml
 services:
   mazanoke:
     container_name: mazanoke
