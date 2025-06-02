@@ -58,7 +58,8 @@ services:
     ports:
       - "3474:80"
 ```
-2. Access the app at `http://localhost:3474`
+  - [See available environment variable configurations here](./docs/configuration.md)
+1. Access the app at `http://localhost:3474`
 
 ### Local
 
