@@ -48,7 +48,7 @@ async function compressImageQueue() {
     return;
   }
 
-  const options = await createCompressionOptions((p) => onProgress(p, i, file.name), file);
+  const options = await createCompressionOptions((p) => currentProgress(p, i, file.name), file);
   const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
   const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
 
@@ -59,7 +59,7 @@ async function compressImageQueue() {
     options.fileType = 'image/png';
   }
 
-  imageCompression((preProcessedImage || file), options)
+  lib.browserImageCompression((preProcessedImage || file), options)
     .then((output) => postProcessImage(output, selectedFormat))
     .then((output) => handleCompressionResult(file, output))
     .catch((error) => console.error(error.message))
@@ -72,7 +72,7 @@ async function compressImageQueue() {
       }
     });
 
-  function onProgress(p, index, fileName) {
+  function currentProgress(p, index, fileName) {
     const overallProgress = calculateOverallProgress(
       state.fileProgressMap,
       state.compressQueueTotal
@@ -111,7 +111,7 @@ async function preProcessImage(file) {
     // HEIC/HEIF is not natively parsable by browsers.
     console.log('Pre-processing HEIC image...')
 
-    preProcessedImage = await HeicTo({
+    preProcessedImage = await lib.heicTo({
       blob: file,
       type: "image/jpeg",
       quality: 0.9,
@@ -131,7 +131,7 @@ async function preProcessImage(file) {
       ui.progress.text.innerHTML = `Please wait. AVIF files may take longer to prepare<span class="loading-dots">`;
     }, 5000);
 
-    preProcessedImage = await imageCompression(file, {
+    preProcessedImage = await lib.browserImageCompression(file, {
       quality: 0.8,
       fileType: "image/jpeg",
       useWebWorker: true,
@@ -146,11 +146,11 @@ async function preProcessImage(file) {
   if (file.type === "image/vnd.microsoft.icon" || file.type === "image/x-icon") {
     const arrayBuffer = await file.arrayBuffer();
 
-    if (ICO.isICO(arrayBuffer)) {
-      const parsedICO = await ICO.parseICO(arrayBuffer, 'image/png');
-      const rawImage = parsedICO[0];
+    if (lib.icoJs.isICO(arrayBuffer)) {
+      const parsedIco = await lib.icoJs.parseICO(arrayBuffer, 'image/png');
+      const rawImage = parsedIco[0];
 
-      preProcessedImage = await decodePNGToBlob(rawImage.buffer);
+      preProcessedImage = await decodePngToBlob(rawImage.buffer);
       preProcessedNewFileType = "image/png";
     }
   }
@@ -163,19 +163,17 @@ async function postProcessImage(file, selectedFormat) {
   
   if (selectedFormat === "image/vnd.microsoft.icon" || selectedFormat === "image/x-icon") {
     // Convert the compressed image to ICO.
-    file = await postProcessToICO(file);
+    file = await postProcessToIco(file);
   }
 
   return file;
 }
 
-async function postProcessToICO(pngFile) {
-  const converter = new PngIcoConverter();
+async function postProcessToIco(pngFile) {
   const inputs = [{ png: pngFile, ignoreSize: true }];
-  let icoFile;
 
   try {
-    icoFile = await converter.convertToBlobAsync(inputs, 'image/vnd.microsoft.icon');
+    return await new lib.pngToIco().convertToBlobAsync(inputs, 'image/vnd.microsoft.icon');
   } catch (e) {
     console.error(e);
     const msg = e.message;
@@ -183,11 +181,10 @@ async function postProcessToICO(pngFile) {
       alert("Error post-processing to ICO: " + (ErrorMessages[msg] ?? msg));
     }
   }
-
-  return icoFile;
 }
 
-function decodePNGToBlob(pngBuffer) {
+
+function decodePngToBlob(pngBuffer) {
   return new Promise((resolve, reject) => {
     const blob = new Blob([pngBuffer], { type: 'image/png' });
     const url = URL.createObjectURL(blob);
@@ -214,7 +211,7 @@ function decodePNGToBlob(pngBuffer) {
   });
 }
 
-async function createCompressionOptions(onProgress, file) {
+async function createCompressionOptions(currentProgress, file) {
   const compressMethod = getCheckedValue(ui.inputs.compressMethod);
   const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
   const maxWeight = parseFloat(ui.inputs.limitWeight.value);
@@ -271,7 +268,7 @@ async function createCompressionOptions(onProgress, file) {
     initialQuality: quality && compressMethod === "quality" ? quality : undefined,
     maxWidthOrHeight: limitDimensionsValue,
     useWebWorker: true,
-    onProgress,
+    onProgress: currentProgress,
     preserveExif: false,
     fileType: selectedFormat || undefined,
     libURL: "./browser-image-compression.js",
@@ -302,13 +299,13 @@ function handleCompressionResult(file, output) {
   const fileSizeSavedPercentage =
     inputFileSize > 0
       ? Math.abs(((fileSizeSaved / inputFileSize) * 100).toFixed(2))
-      : "0.000";
+      : "0";
   const fileSizeSavedTrend =
     fileSizeSaved < 0 ? "+" : fileSizeSaved > 0 ? "-" : "";
   const fileSizeSavedClass =
     fileSizeSaved <= 0 ? "badge--error" : "badge--success";
 
-  imageCompression(output, config.thumbnailOptions).then((thumbnailBlob) => {
+  lib.browserImageCompression(output, config.thumbnailOptions).then((thumbnailBlob) => {
     const thumbnailDataURL = URL.createObjectURL(thumbnailBlob);
     getImageDimensions(outputImageBlob, ({ width, height }) => {
       const outputHTML = buildOutputItemHTML({

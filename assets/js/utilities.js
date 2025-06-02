@@ -1,7 +1,7 @@
 function isFileTypeSupported(fileType, file) {
   // Check for supported file types
 
-  if (HeicTo.isHeic(file) && isHeicExt(file)) {
+  if (lib.heicTo.isHeic(file) && isHeicExt(file)) {
     fileType = "image/heic";
     ui.outputFileType = "image/heic";
     console.log('File type is HEIC: ', fileType)

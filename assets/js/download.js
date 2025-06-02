@@ -46,7 +46,7 @@ async function downloadAllImages() {
           `${zipFileName}-${zipIndex.toString().padStart(3, "0")}.zip`
         );
 
-        currentZip = new JSZip();
+        currentZip = new lib.jsZip();
         totalSize = 0;
         zipIndex++;
       }

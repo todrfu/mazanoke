@@ -100,7 +100,15 @@ App.state = {
   limitWeightUnit: "MB",
 };
 
+App.lib = {
+  browserImageCompression: imageCompression,
+  heicTo: window.HeicTo,
+  pngToIco: window.PngIcoConverter,
+  icoJs: window.ICO,
+  jsZip: window.JSZip
+};
+
 const ui = App.ui;
 const config = App.config;
 const state = App.state;
-zip = new JSZip();
+const lib = App.lib;
