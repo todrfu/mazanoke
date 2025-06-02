@@ -1714,9 +1714,15 @@ body:not(.compressing--is-active) .drop-zone.drop-zone--is-dragging .drop-zone__
   }
 
   .button-card-radio-group {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(96px, auto);
+    gap: 10px;
   }
 
+  .button-card-radio.basis-full {
+    flex-basis: unset !important;
+  }
 
   @keyframes slide-in-up {
     0% {

@@ -183,7 +183,6 @@ async function postProcessToIco(pngFile) {
   }
 }
 
-
 function decodePngToBlob(pngBuffer) {
   return new Promise((resolve, reject) => {
     const blob = new Blob([pngBuffer], { type: 'image/png' });

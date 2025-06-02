@@ -26,7 +26,9 @@ An outline of the project structure.
 | **Vendor Libraries (`assets/vendor`)** | Third-party libraries, essential to the app's functionality.                |
 | `browser-image-compress.js`        | A library for browser-side image compression.                                   |
 | `heic-to.js`                       | HEIC image decoder, allowing converting to other browser-friendly file types.   |
+| `ico.js`                           | Parsing ICO files type.                                                         |
 | `jszip.js`                         | Handles zipping of image files for download.                                    |
+| `png2ico.js`                       | Encoding ICO files type.                                                        |
 |                                    |                                                                                 |
 | **Images (`assets/images`)**       | Static images for user interface and metatags.                                  |
 |                                    |                                                                                 |
@@ -41,9 +43,11 @@ An outline of the project structure.
 
 To better understand the app’s flow and file interactions, the outline below describes the general image optimization process.
 
+Throughout the app, all third-party libraries are accessed via the local alias `lib` (e.g., `lib.browserImageCompression`), as defined in `global.js`. This keeps libraries organized and separate from the project’s code.
+
 1. `index.html` launches the app.
-1. The scripts are loaded in a specific order to initialize global variables, references, and dependencies that other scripts depend on.
-    1. `vendor` scripts.
+1. The scripts load in a specific order to initialize global variables, references, and dependencies required by other scripts.  
+    1. `vendor/*.js` (vendor scripts).
     1. `global.js`
     1. `utilities.js`
     1. `helpers.js`
@@ -51,12 +55,14 @@ To better understand the app’s flow and file interactions, the outline below d
     1. `compression.js`
     1. `download.js`
     1. `events.js`
-1. `initApp()` in `events.js` binds events to interactive components in `index.html` and handles saving/restoring app settings.
-1. When a user drops or selects an image, event handlers in `events.js` capture the input and trigger compression functions from `compression.js`.
-1. Before compressing any images, `ui.js` parses and validates the selected options. To do so, many features from `utilities.js` are used to build the `options` object that are passed to the image compressor.
-1. Input images go through `preProcessImage(file)` in `compression.js` to be decoded, ensuring compatibility with `browser-image-compression.js`, which serves as the main image compressor library in this app.
-    - Image formats natively supported by browsers (JPG, PNG, WebP) typically don't need pre-processing and are passed through directly.
-    - HEIC images are pre-processed, as they are not natively supported by major browsers.
-    - AVIF is natively supported, but due to its already optimized nature, it is pre-processed to a lossy format to reduce the chance of the output file being larger than the original.
-1. The state of the image processing, such as `isCompressing`, `compressQueue`, and more, are stored in `global.js`.
-1. Once an image is processed, `handleCompressionResult(file, output)` in `helpers.js` outputs the compressed image on the user interface, where users can download individual images or all images as a zip, handled by `download.js`.
+1. `initApp()` in `events.js` binds events to interactive elements in `index.html` and manages saving and restoring app settings.  
+1. When a user drops or selects an image, event handlers in `events.js` capture it and trigger compression functions from `compression.js`.  
+1. Before compression, `ui.js` parses and validates the user’s settings, using utilities functions from `utilities.js`. This builds the `options` object that is passed to the image compressor.  
+1. Input images go through `preProcessImage(file)` in `compression.js` for decoding and ensure compatibility with `browser-image-compression.js`, which is the main compression library used in this project.  
+   - Browser-supported formats (JPG, PNG, WebP) skip pre-processing.  
+   - Unsupported formats like HEIC and ICO are pre-processed.  
+   - AVIF is supported but already highly optimized. It is thus pre-processed into a lossy format to avoid larger file sizes after compression.  
+1. Image processing state (e.g., `isCompressing`, `compressQueue`) is stored and accessed in `global.js`.  
+1. At this stage, two image processing have been executed: `preProcessImage(file)` and `lib.browserImageCompression(file, options)`.
+1. Lastly, `postProcessImage()` handles final conversions if needed. It is used for output formats that browsers don’t natively support, like ICO.  
+1. Once the final encoding is done, `handleCompressionResult(file, output)` in `helpers.js` updates the UI with the compressed image. Downloads, either single or zipped multiple images, are managed by `download.js`.
