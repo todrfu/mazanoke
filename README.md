@@ -50,15 +50,15 @@ Created for everyday people and designed to be shared with family and friends, i
 ### Docker
 
 1. Using [Docker Compose](https://docs.docker.com/compose/):
-```yaml
-services:
-  mazanoke:
-    container_name: mazanoke
-    image: ghcr.io/civilblur/mazanoke:latest
-    ports:
-      - "3474:80"
-```
-  - See available environment variables: [Configurations](./docs/configuration.md)
+    ```yaml
+    services:
+      mazanoke:
+        container_name: mazanoke
+        image: ghcr.io/civilblur/mazanoke:latest
+        ports:
+          - "3474:80"
+    ```
+    - See available environment variables in: [Configurations](./docs/configuration.md)
 1. Access the app at `http://localhost:3474`
 
 ### Local

@@ -1717,7 +1717,7 @@ body:not(.compressing--is-active) .drop-zone.drop-zone--is-dragging .drop-zone__
     display: grid;
     grid-template-columns: 1fr;
     grid-auto-rows: minmax(96px, auto);
-    gap: 10px;
+    gap: var(--space-xs);
   }
 
   .button-card-radio.basis-full {
