@@ -9,7 +9,7 @@
  */
 
 /**
- * TODO 2025-06-01: Fix thumbnails not showing for ICO output files. Thumbnail needs to be generated in early stages and passed.
+ * TODO 2025-06-01: Fix incorrect image width height displayed in output for ICO files. 
  */
 
 function compressImage(event) {
@@ -61,8 +61,16 @@ async function compressImageQueue() {
   }
 
   lib.imageCompression((preProcessedImage || file), options)
-    .then((output) => postProcessImage(output, selectedFormat))
-    .then((output) => handleCompressionResult(file, output))
+    .then((compressedImage) => generateThumbnailImage(compressedImage))
+    .then(({ sourceImage, thumbnailImage }) =>
+      postProcessImage(sourceImage, selectedFormat).then((postProcessedImage) => ({
+        postProcessedImage,
+        thumbnailImage,
+      }))
+    )
+    .then(({ postProcessedImage, thumbnailImage }) =>
+      handleCompressionResult(file, postProcessedImage, thumbnailImage)
+    )
     .catch((error) => console.error(error.message))
     .finally(() => {
       state.compressProcessedCount++;
@@ -282,7 +290,13 @@ async function createCompressionOptions(currentProgress, file) {
   return options;
 }
 
-function handleCompressionResult(file, output) {
+async function generateThumbnailImage(file) {
+  const sourceImage = file;
+  const thumbnailImage = await lib.imageCompression(file, config.thumbnailOptions);
+  return { thumbnailImage, sourceImage };
+}
+
+function handleCompressionResult(file, output, thumbnailBlob) {
   const { outputFileExtension, selectedFormat } = getFileType(file);
   const outputImageBlob = URL.createObjectURL(output);
 
@@ -305,35 +319,33 @@ function handleCompressionResult(file, output) {
   const fileSizeSavedClass =
     fileSizeSaved <= 0 ? "badge--error" : "badge--success";
 
-  lib.imageCompression(output, config.thumbnailOptions).then((thumbnailBlob) => {
-    const thumbnailDataURL = URL.createObjectURL(thumbnailBlob);
-    getImageDimensions(outputImageBlob, ({ width, height }) => {
-      const outputHTML = buildOutputItemHTML({
-        outputImageBlob,
-        thumbnailDataURL,
-        outputFileNameText,
-        outputFileExtension,
-        width,
-        height,
-        fileSize: output.size,
-        fileSizeSavedTrend,
-        fileSizeSavedPercentage,
-        fileSizeSavedClass,
-      });
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = outputHTML.trim();
-      ui.output.content.prepend(wrapper.firstChild);
-
-      state.outputImageCount++;
-      ui.output.container.dataset.count = state.outputImageCount;
-      ui.output.subpageOutput.dataset.count = state.outputImageCount;
-      ui.output.imageCount.dataset.count = state.outputImageCount;
-      ui.output.imageCount.textContent = state.outputImageCount;
-
-      if (state.compressProcessedCount === 1) {
-        selectSubpage("output");
-      }
+  const thumbnailDataURL = URL.createObjectURL(thumbnailBlob);
+  getImageDimensions(outputImageBlob, ({ width, height }) => {
+    const outputHTML = buildOutputItemHTML({
+      outputImageBlob,
+      thumbnailDataURL,
+      outputFileNameText,
+      outputFileExtension,
+      width,
+      height,
+      fileSize: output.size,
+      fileSizeSavedTrend,
+      fileSizeSavedPercentage,
+      fileSizeSavedClass,
     });
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = outputHTML.trim();
+    ui.output.content.prepend(wrapper.firstChild);
+
+    state.outputImageCount++;
+    ui.output.container.dataset.count = state.outputImageCount;
+    ui.output.subpageOutput.dataset.count = state.outputImageCount;
+    ui.output.imageCount.dataset.count = state.outputImageCount;
+    ui.output.imageCount.textContent = state.outputImageCount;
+
+    if (state.compressProcessedCount === 1) {
+      selectSubpage("output");
+    }
   });
 }
 
