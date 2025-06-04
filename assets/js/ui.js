@@ -1,7 +1,7 @@
 /**
  * TODO:
- * - Refactor toast to reusable component to show error messages. 
- * - Allow clear individual items and all items.
+ * - Refactor toast into reusable component, for showing e.g. error messages. 
+ * - Allow clearing individual items and all items in output.
  */
 
 let storeConfigDebounceTimer;

@@ -29,7 +29,7 @@ Created for everyday people and designed to be shared with family and friends, i
   - Set target file size
   - Set max width/height
   - Paste images from clipboard
-  - Convert between and to `JPG`, `PNG`, `WebP`
+  - Convert between and to `JPG`, `PNG`, `WebP`, `ICO`
   - Convert from `HEIC`, `AVIF`, `GIF`, `SVG`
 - 🔒 **Privacy-Focused**
   - Works offline
@@ -37,13 +37,6 @@ Created for everyday people and designed to be shared with family and friends, i
   - Removes EXIF data (location, date, etc.)
   - No tracking
   - Installable web app ([learn more](./docs/install-web-app.md))
-
-**Planned**
-- [X] Upload multiple files at once
-- [X] Support for more image file types
-  - Recently added conversion from: `HEIC`, `AVIF`, `GIF`, `SVG` → `JPG/PNG/WebP`
-- [X] Remember last-used settings
-- [ ] Image cropping
 
 ## Install
 
