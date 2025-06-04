@@ -1484,7 +1484,6 @@ body:not(.compressing--is-active) .drop-zone.drop-zone--is-dragging .drop-zone__
     opacity: 0.7;
     transform: scale(1.1);
     margin: 0;
-    padding: 0;
   }
   100% {
     opacity: 0;
@@ -2264,7 +2263,7 @@ body:not(.compressing--is-active) .drop-zone.drop-zone--is-dragging .drop-zone__
 }
 
 .fade-out-shrink {
-  animation: fade-out-shrink var(--duration-600) ease-in forwards;
+  animation: fade-out-shrink var(--duration-600) ease-in-out forwards;
 }
 
 .mask-b {
