@@ -28,8 +28,10 @@ app.ui = {
     text: document.getElementById("compressProgressText"),
   },
   output: {
+    emptyState: document.getElementById("imageOutputEmptyState"),
     container: document.getElementById("outputDownloadContainer"),
     content: document.getElementById("outputDownloadContent"),
+    actionsContainer: document.getElementById("imageOutputActionsContainer"),
     downloadAllBtn: document.getElementById("downloadAllImagesButton"),
     subpageOutput: document.getElementById("subpageOutput"),
     imageCount: document.getElementById("compressedImageCount"),

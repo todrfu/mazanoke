@@ -53,3 +53,35 @@ function buildOutputItemHTML({
     </div>
   `;
 }
+
+function updateImageCounter(delta = 1, set = null) {
+  if (set !== null) {
+    // Set the current image counter state, the number of active optimized images.
+    state.outputImageCount = set;
+  } else {
+    // Increment or decrement
+    state.outputImageCount += delta;
+  }
+
+  ui.output.container.dataset.count = state.outputImageCount;
+  ui.output.subpageOutput.dataset.count = state.outputImageCount;
+  ui.output.imageCount.dataset.count = state.outputImageCount;
+  ui.output.imageCount.textContent = state.outputImageCount;
+
+  return state.outputImageCount;
+}
+
+function updateOutputEmptyState() {
+  const isEmpty = state.outputImageCount <= 0;
+  const className = "is-active";
+
+  if (isEmpty) {
+    ui.output.emptyState.classList.add(className);
+    ui.output.actionsContainer.classList.remove(className);
+  } else {
+    ui.output.emptyState.classList.remove(className);
+    ui.output.actionsContainer.classList.add(className);
+  }
+
+  return isEmpty
+}

@@ -982,13 +982,27 @@ body:not(.subpage--output):not(.subpage--settings) .image-options-container {
   margin-right: auto;
 }
 
-.image-output-container:not([data-count="0"]) .image-output__empty-state {
+.image-output__empty-state {
   display: none;
 }
 
-.image-output-container[data-count="0"] .image-output__actions-container {
+.image-output__actions-container {
   opacity: 0;
   pointer-events: none;
+}
+
+.image-output__actions-container.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image-output__empty-state.is-active {
+  display: block;
+}
+
+.image-output__empty-state.is-active .image-output__actions-container {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .image-output__item {

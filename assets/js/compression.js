@@ -336,12 +336,8 @@ function handleCompressionResult(file, output, thumbnailBlob) {
     const wrapper = document.createElement("div");
     wrapper.innerHTML = outputHTML.trim();
     ui.output.content.prepend(wrapper.firstChild);
-
-    state.outputImageCount++;
-    ui.output.container.dataset.count = state.outputImageCount;
-    ui.output.subpageOutput.dataset.count = state.outputImageCount;
-    ui.output.imageCount.dataset.count = state.outputImageCount;
-    ui.output.imageCount.textContent = state.outputImageCount;
+    updateImageCounter(1);
+    updateOutputEmptyState();
 
     if (state.compressProcessedCount === 1) {
       selectSubpage("output");

@@ -93,25 +93,19 @@ function deleteImage(elementId) {
   if (!elementId) { return }
   const image = document.getElementById(elementId);
   image.classList.add("fade-out-shrink");
-  ui.output.subpageOutput.dataset.count--;
-  ui.output.imageCount.dataset.count--;
-  ui.output.imageCount.textContent--;
-  state.outputImageCount--;
-  image.addEventListener("animationend", () => {
-    ui.output.container.dataset.count--;
+  updateImageCounter(-1);
+  image.addEventListener("animationend", () => {  
     image.remove();
+    updateOutputEmptyState();
   }, { once: true }); 
 }
 
 function deleteAllImages() {
   ui.output.content.classList.add("fade-out-shrink");
-  ui.output.subpageOutput.dataset.count = 0;
-  ui.output.imageCount.dataset.count = 0;
-  ui.output.imageCount.textContent = 0;
-  state.outputImageCount = 0;
+  updateImageCounter(0, true);
   ui.output.content.addEventListener("animationend", () => {
-    ui.output.container.dataset.count = 0;
     ui.output.content.innerHTML = "";
+    updateOutputEmptyState();
   ui.output.content.classList.remove("fade-out-shrink");
   }, { once: true }); 
 }
