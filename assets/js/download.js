@@ -89,23 +89,26 @@ async function triggerDownload(blob, filename) {
   });
 }
 
-function deleteImage(elementId) {
+async function deleteImage(elementId) {
   if (!elementId) { return }
   const image = document.getElementById(elementId);
+  image.style.pointerEvents = "none";
   image.classList.add("fade-out-shrink");
-  updateImageCounter(-1);
-  image.addEventListener("animationend", () => {  
-    image.remove();
-    updateOutputEmptyState();
-  }, { once: true }); 
+  await updateImageCounter(-1).then( () => {
+    image.addEventListener("animationend", () => {  
+      image.remove();
+      updateOutputEmptyState();
+    }, { once: true }); 
+  });
 }
 
-function deleteAllImages() {
+async function deleteAllImages() {
   ui.output.content.classList.add("fade-out-shrink");
-  updateImageCounter(0, true);
-  ui.output.content.addEventListener("animationend", () => {
-    ui.output.content.innerHTML = "";
-    updateOutputEmptyState();
-  ui.output.content.classList.remove("fade-out-shrink");
-  }, { once: true }); 
+  await updateImageCounter(0, true).then( () => {
+    ui.output.content.addEventListener("animationend", () => {
+      ui.output.content.innerHTML = "";
+      updateOutputEmptyState();
+      ui.output.content.classList.remove("fade-out-shrink");
+    }, { once: true }); 
+  });
 }

@@ -193,30 +193,42 @@ function getCheckedValue(nodeList) {
   return [...nodeList].find((el) => el.checked)?.value || null;
 }
 
-function getImageDimensions(imageInput, callback) {
-  const img = new Image();
+function getImageDimensions(imageInput) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let objectUrl;
 
-  if (imageInput instanceof Blob) {
-    img.src = URL.createObjectURL(imageInput);
-  }
-  else if (typeof imageInput === "string") {
-    img.src = imageInput;
-  }
-  else {
-    console.error("Invalid input provided to getImageDimensions.");
-    callback(null);
-    return;
-  }
+    if (imageInput instanceof Blob) {
+      objectUrl = URL.createObjectURL(imageInput);
+      img.src = objectUrl;
+    } else if (typeof imageInput === "string") {
+      img.src = imageInput;
+    } else {
+      reject(new Error("Invalid input provided to getImageDimensions."));
+      return;
+    }
 
-  img.onload = () => callback({ width: img.naturalWidth, height: img.naturalHeight });
-  img.onerror = () => callback(null);
+    img.onload = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      resolve({
+        outputImageWidth: img.naturalWidth,
+        outputImageHeight: img.naturalHeight,
+      });
+    };
+
+    img.onerror = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      reject(new Error("Failed to load image for dimensions."));
+    };
+  });
 }
+
 
 function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
   // Adjusts image dimensions to prevent the short edge from being 0.
   // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
   return new Promise((resolve) => {
-    getImageDimensions(imageBlob, ({ width, height }) => {
+    getImageDimensions(imageBlob).then(({ outputImageWidth: width, outputImageHeight: height }) => {
       if (!width || !height) {
         resolve(undefined);
         return;

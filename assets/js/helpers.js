@@ -20,7 +20,7 @@ function buildOutputItemHTML({
   }
   const itemId = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `
-    <div id="output_item__${itemId}" class="image-output__item file-format--${outputFileExtension}" data-elevation="3">
+    <div id="output_item__${itemId}" class="image-output__item file-format--${outputFileExtension} fade-in-up" data-elevation="3">
       <img src="${thumbnailDataURL}" class="image-output__item-thumbnail" loading="lazy">
       <div class="image-output__item-text">
         <div class="image-output__item-filename">
@@ -55,7 +55,7 @@ function buildOutputItemHTML({
 }
 
 function updateImageCounter(count = 1, set = false) {
-  // Prevent race condition by using arrow function to chain updates.
+  // Chain the update on the existing promise to serialize calls
   state.outputImageCountLock = state.outputImageCountLock.then(() => {
     state.outputImageCount = set
       ? Math.max(0, count)
@@ -66,21 +66,25 @@ function updateImageCounter(count = 1, set = false) {
     ui.output.subpageOutput.dataset.count = countStr;
     ui.output.imageCount.dataset.count = countStr;
     ui.output.imageCount.textContent = countStr;
+
+    return state.outputImageCount;
   });
 
-  // Resolves to allow the next state.outputImageCountLock update in the queue to run
   return state.outputImageCountLock;
 }
 
 function updateOutputEmptyState() {
   const isEmpty = state.outputImageCount <= 0;
-  const isOutputContentEmpty = ui.output.content.children.length === 0;
   const className = "is-active";
 
-  if (isEmpty && isOutputContentEmpty) {
+  if (isEmpty) {
+  console.log('emptystate ON')
+
     ui.output.emptyState.classList.add(className);
     ui.output.actionsContainer.classList.remove(className);
   } else {
+      console.log('emptystate OFF')
+
     ui.output.emptyState.classList.remove(className);
     ui.output.actionsContainer.classList.add(className);
   }

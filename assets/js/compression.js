@@ -9,7 +9,6 @@
  */
 
 /**
- * TODO 2025-06-01: Fix incorrect image width height displayed in output for ICO files. 
  * TODO 2025-06-06: Refactor toast into reusable component, for showing e.g. "undo delete", error messages.
  * TODO 2025-06-06: Refactor deleteImage(), downloadAllImages(), to support "undo delete" with countdown.
  */
@@ -63,24 +62,35 @@ async function compressImageQueue() {
   }
 
   lib.imageCompression((preProcessedImage || file), options)
-    // TODO 2025-06-03 (Thumbnail step 1): [ ] Get image width/height, pass to handleCompressionResult().
-    // Not possible to properly read image size at the end of the process if it's ICO, unless you decode with ico.js.
-    // Better to stick with getImageDimensions() which can read the image dimensions at this step, before ICO conversion
-    // by creating an image element to read its properties. Less dependencies this way.
-    .then((compressedImage) => generateThumbnailImage(compressedImage))
-    .then(({ sourceImage, thumbnailImage }) =>
-      postProcessImage(sourceImage, selectedFormat).then((postProcessedImage) => ({
-        postProcessedImage,
-        thumbnailImage,
+    .then((compressedImage) =>
+      getImageDimensions(compressedImage).then((dimensions) => ({
+        image: compressedImage,
+        ...dimensions,
       }))
     )
-    .then(({ postProcessedImage, thumbnailImage }) =>
-      handleCompressionResult(file, postProcessedImage, thumbnailImage)
+    .then(({ image, outputImageWidth, outputImageHeight }) =>
+      generateThumbnailImage(image, { outputImageWidth, outputImageHeight })
+    )
+    .then(({ sourceImage, thumbnailImage, outputImageWidth, outputImageHeight }) =>
+      postProcessImage(sourceImage, selectedFormat, { outputImageWidth, outputImageHeight }).then(
+        ({ postProcessedImage }) => ({
+          postProcessedImage,
+          thumbnailImage,
+          outputImageWidth,
+          outputImageHeight
+        })
+      )
+    )
+    .then(({ postProcessedImage, thumbnailImage, outputImageWidth, outputImageHeight }) =>
+      handleCompressionResult(file, postProcessedImage, thumbnailImage, outputImageWidth, outputImageHeight)
     )
     .catch((error) => console.error(error.message))
     .finally(() => {
       state.compressProcessedCount++;
       state.compressQueue.shift();
+      if (state.compressProcessedCount === 1) {
+        selectSubpage("output");
+      }
       resetCompressionState(state.compressProcessedCount === state.compressQueueTotal);
       if (state.compressProcessedCount < state.compressQueueTotal) {
         compressImageQueue();
@@ -173,16 +183,16 @@ async function preProcessImage(file) {
   return { preProcessedImage, preProcessedNewFileType };
 }
 
-async function postProcessImage(file, selectedFormat) {
+async function postProcessImage(file, selectedFormat, dimensions) {
   console.log('Post-processing...');
-  
+
   if (selectedFormat === "image/vnd.microsoft.icon" || selectedFormat === "image/x-icon") {
     // Convert the compressed image to ICO.
     file = await postProcessToIco(file);
   }
-
-  return file;
+  return { postProcessedImage: file, ...dimensions };
 }
+
 
 async function postProcessToIco(pngFile) {
   const inputs = [{ png: pngFile, ignoreSize: true }];
@@ -296,13 +306,13 @@ async function createCompressionOptions(currentProgress, file) {
   return options;
 }
 
-async function generateThumbnailImage(file) {
+async function generateThumbnailImage(file, dimensions) {
   const sourceImage = file;
   const thumbnailImage = await lib.imageCompression(file, config.thumbnailOptions);
-  return { thumbnailImage, sourceImage };
+  return { thumbnailImage, sourceImage, ...dimensions };
 }
 
-function handleCompressionResult(file, output, thumbnailBlob) {
+async function handleCompressionResult(file, output, thumbnailBlob, outputImageWidth, outputImageHeight) {
   const { outputFileExtension, selectedFormat } = getFileType(file);
   const outputImageBlob = URL.createObjectURL(output);
 
@@ -326,30 +336,26 @@ function handleCompressionResult(file, output, thumbnailBlob) {
     fileSizeSaved <= 0 ? "badge--error" : "badge--success";
 
   const thumbnailDataURL = URL.createObjectURL(thumbnailBlob);
-  getImageDimensions(outputImageBlob, ({ width, height }) => {
-    const outputHTML = buildOutputItemHTML({
-      outputImageBlob,
-      thumbnailDataURL,
-      outputFileNameText,
-      outputFileExtension,
-      width,
-      height,
-      fileSize: output.size,
-      fileSizeSavedTrend,
-      fileSizeSavedPercentage,
-      fileSizeSavedClass,
-    });
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = outputHTML.trim();
-    ui.output.content.prepend(wrapper.firstChild);
-    updateImageCounter(1);
-    updateOutputEmptyState();
 
-    if (state.compressProcessedCount === 1) {
-      selectSubpage("output");
-    }
+  const outputHTML = buildOutputItemHTML({
+    outputImageBlob,
+    thumbnailDataURL,
+    outputFileNameText,
+    outputFileExtension,
+    width: outputImageWidth,
+    height: outputImageHeight,
+    fileSize: output.size,
+    fileSizeSavedTrend,
+    fileSizeSavedPercentage,
+    fileSizeSavedClass,
   });
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = outputHTML.trim();
+  ui.output.content.prepend(wrapper.firstChild);
+  await updateImageCounter(1).then( () => updateOutputEmptyState());
 }
+
 
 function calculateOverallProgress(progressMap, totalFiles) {
   const sum = Object.values(progressMap).reduce((acc, val) => acc + val, 0);
