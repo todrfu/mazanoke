@@ -98,6 +98,7 @@ app.state = {
   isDownloadingAll: false,
   inputFileSize: null,
   outputImageCount: 0,
+  outputImageCountLock: Promise.resolve(),
   fileProgressMap: {},
   limitWeightUnit: "MB",
 };

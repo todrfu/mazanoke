@@ -54,28 +54,30 @@ function buildOutputItemHTML({
   `;
 }
 
-function updateImageCounter(delta = 1, set = null) {
-  if (set !== null) {
-    // Set the current image counter state, the number of active optimized images.
-    state.outputImageCount = set;
-  } else {
-    // Increment or decrement
-    state.outputImageCount += delta;
-  }
+function updateImageCounter(count = 1, set = false) {
+  // Prevent race condition by using arrow function to chain updates.
+  state.outputImageCountLock = state.outputImageCountLock.then(() => {
+    state.outputImageCount = set
+      ? Math.max(0, count)
+      : Math.max(0, state.outputImageCount + count);
 
-  ui.output.container.dataset.count = state.outputImageCount;
-  ui.output.subpageOutput.dataset.count = state.outputImageCount;
-  ui.output.imageCount.dataset.count = state.outputImageCount;
-  ui.output.imageCount.textContent = state.outputImageCount;
+    const countStr = state.outputImageCount.toString();
+    ui.output.container.dataset.count = countStr;
+    ui.output.subpageOutput.dataset.count = countStr;
+    ui.output.imageCount.dataset.count = countStr;
+    ui.output.imageCount.textContent = countStr;
+  });
 
-  return state.outputImageCount;
+  // Resolves to allow the next state.outputImageCountLock update in the queue to run
+  return state.outputImageCountLock;
 }
 
 function updateOutputEmptyState() {
   const isEmpty = state.outputImageCount <= 0;
+  const isOutputContentEmpty = ui.output.content.children.length === 0;
   const className = "is-active";
 
-  if (isEmpty) {
+  if (isEmpty && isOutputContentEmpty) {
     ui.output.emptyState.classList.add(className);
     ui.output.actionsContainer.classList.remove(className);
   } else {
