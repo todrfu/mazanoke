@@ -78,13 +78,9 @@ function updateOutputEmptyState() {
   const className = "is-active";
 
   if (isEmpty) {
-  console.log('emptystate ON')
-
     ui.output.emptyState.classList.add(className);
     ui.output.actionsContainer.classList.remove(className);
   } else {
-      console.log('emptystate OFF')
-
     ui.output.emptyState.classList.remove(className);
     ui.output.actionsContainer.classList.add(className);
   }

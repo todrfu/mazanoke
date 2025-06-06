@@ -281,7 +281,7 @@ async function createCompressionOptions(currentProgress, file) {
       let decodedHeicFile = await lib.heicTo({
         blob: file,
         type: "image/jpeg",
-        quality: 0.01,
+        quality: 0.001,
       });
 
       // limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
