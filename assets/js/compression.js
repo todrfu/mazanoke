@@ -51,6 +51,7 @@ async function compressImageQueue() {
   }
 
   const options = await createCompressionOptions((p) => currentProgress(p, i, file.name), file);
+  // Preprocess image when needed (e.g., decoding or precompress image)
   const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
   const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
 
@@ -61,6 +62,7 @@ async function compressImageQueue() {
     options.fileType = 'image/png';
   }
 
+  // Perform image compression
   lib.imageCompression((preProcessedImage || file), options)
     .then((compressedImage) =>
       getImageDimensions(compressedImage).then((dimensions) => ({
@@ -72,6 +74,7 @@ async function compressImageQueue() {
       generateThumbnailImage(image, { outputImageWidth, outputImageHeight })
     )
     .then(({ sourceImage, thumbnailImage, outputImageWidth, outputImageHeight }) =>
+      // Postprocess image when needed (e.g., finalize by converting to the targeted file format)
       postProcessImage(sourceImage, selectedFormat, { outputImageWidth, outputImageHeight }).then(
         ({ postProcessedImage }) => ({
           postProcessedImage,
