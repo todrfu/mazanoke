@@ -196,7 +196,6 @@ async function postProcessImage(file, selectedFormat, dimensions) {
   return { postProcessedImage: file, ...dimensions };
 }
 
-
 async function postProcessToIco(pngFile) {
   const inputs = [{ png: pngFile, ignoreSize: true }];
 
@@ -277,8 +276,18 @@ async function createCompressionOptions(currentProgress, file) {
      * Once decoded, compare the smallest long edge with the user-defined "limit dimension"
      * and use the larger value to ensure valid resizing.
      */
+    // !NOTE 2025-06-06: The HEIC file needs to be decode at this stage to determine its dimensions. 
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
-      limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
+      let decodedHeicFile = await lib.heicTo({
+        blob: file,
+        type: "image/jpeg",
+        quality: 0.01,
+      });
+
+      // limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
+      limitDimensionsValue = dimensionMethod === "limit" ? 
+        await getAdjustedDimensions(decodedHeicFile, ui.inputs.limitDimensions.value) : 
+        undefined;
     }
     else {
       limitDimensionsValue = undefined;
@@ -358,7 +367,6 @@ async function handleCompressionResult(file, output, thumbnailBlob, outputImageW
   ui.output.content.prepend(wrapper.firstChild);
   await updateImageCounter(1).then( () => updateOutputEmptyState());
 }
-
 
 function calculateOverallProgress(progressMap, totalFiles) {
   const sum = Object.values(progressMap).reduce((acc, val) => acc + val, 0);
