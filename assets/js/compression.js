@@ -267,16 +267,6 @@ async function createCompressionOptions(currentProgress, file) {
   let limitDimensionsValue = undefined;
 
   if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
-    /**
-     * TODO 2025-06-01: Remove arbitrary 50px limit for HEIC images when using "limit dimension".
-     * 
-     * Currently, HEIC dimensions aren't available during options setup since they require decoding first.
-     * This workaround prevents resizing to below the image’s smallest long edge while preserving aspect ratio.
-     * 
-     * Once decoded, compare the smallest long edge with the user-defined "limit dimension"
-     * and use the larger value to ensure valid resizing.
-     */
-    // !NOTE 2025-06-06: The HEIC file needs to be decode at this stage to determine its dimensions. 
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
       let decodedHeicFile = await lib.heicTo({
         blob: file,
@@ -284,7 +274,6 @@ async function createCompressionOptions(currentProgress, file) {
         quality: 0.001,
       });
 
-      // limitDimensionsValue = (ui.inputs.limitDimensions.value > 50) ? ui.inputs.limitDimensions.value : 50;
       limitDimensionsValue = dimensionMethod === "limit" ? 
         await getAdjustedDimensions(decodedHeicFile, ui.inputs.limitDimensions.value) : 
         undefined;
