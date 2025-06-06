@@ -29,7 +29,7 @@ Created for everyday people and designed to be shared with family and friends, i
   - Set target file size
   - Set max width/height
   - Paste images from clipboard
-  - Convert between and to `JPG`, `PNG`, `WebP`, `ICO`
+  - Convert between and to `JPG`, `PNG`, `WebP`
   - Convert from `HEIC`, `AVIF`, `GIF`, `SVG`
 - 🔒 **Privacy-Focused**
   - Works offline
@@ -51,7 +51,6 @@ Created for everyday people and designed to be shared with family and friends, i
         ports:
           - "3474:80"
     ```
-    - See available environment variables in: [Configurations](./docs/configuration.md)
 1. Access the app at `http://localhost:3474`
 
 ### Local
