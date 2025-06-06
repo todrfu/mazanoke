@@ -10,6 +10,8 @@
 
 /**
  * TODO 2025-06-01: Fix incorrect image width height displayed in output for ICO files. 
+ * TODO 2025-06-06: Refactor toast into reusable component, for showing e.g. "undo delete", error messages.
+ * TODO 2025-06-06: Refactor deleteImage(), downloadAllImages(), to support "undo delete" with countdown.
  */
 
 function compressImage(event) {
@@ -61,6 +63,10 @@ async function compressImageQueue() {
   }
 
   lib.imageCompression((preProcessedImage || file), options)
+    // TODO 2025-06-03 (Thumbnail step 1): [ ] Get image width/height, pass to handleCompressionResult().
+    // Not possible to properly read image size at the end of the process if it's ICO, unless you decode with ico.js.
+    // Better to stick with getImageDimensions() which can read the image dimensions at this step, before ICO conversion
+    // by creating an image element to read its properties. Less dependencies this way.
     .then((compressedImage) => generateThumbnailImage(compressedImage))
     .then(({ sourceImage, thumbnailImage }) =>
       postProcessImage(sourceImage, selectedFormat).then((postProcessedImage) => ({
