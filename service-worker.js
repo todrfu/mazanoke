@@ -9,6 +9,7 @@ const urlsToCache = [
   '/assets/css/style.css',
   '/assets/vendor/browser-image-compression.js',
   '/assets/vendor/heic-to.js',
+  '/assets/vendor/libheif.js',
   '/assets/vendor/ico.js',
   '/assets/vendor/png2ico.js',
   '/assets/vendor/jszip.js',

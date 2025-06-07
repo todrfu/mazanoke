@@ -224,9 +224,8 @@ function getImageDimensions(imageInput) {
 }
 
 
-function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
-  // Adjusts image dimensions to prevent the short edge from being 0.
-  // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
+/* function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
+
   return new Promise((resolve) => {
     getImageDimensions(imageBlob).then(({ outputImageWidth: width, outputImageHeight: height }) => {
       if (!width || !height) {
@@ -241,7 +240,32 @@ function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
       resolve(limitDimensionsValue);
     });
   });
+} */
+
+function getAdjustedDimensions({ imageBlob, width, height }, desiredLimitDimensions) {
+  // Adjusts image dimensions to prevent the short edge from being 0.
+  // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
+  return new Promise((resolve) => {
+    const compute = (w, h) => {
+      if (!w || !h) return resolve(undefined);
+      const shortEdge = Math.min(w, h);
+      const longEdge = Math.max(w, h);
+      const minAllowedDimension = Math.ceil(longEdge * (1 / shortEdge));
+      resolve(Math.max(desiredLimitDimensions, minAllowedDimension));
+    };
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      compute(width, height);
+    } else if (imageBlob instanceof Blob) {
+      getImageDimensions(imageBlob).then(({ outputImageWidth, outputImageHeight }) => {
+        compute(outputImageWidth, outputImageHeight);
+      });
+    } else {
+      resolve(undefined);
+    }
+  });
 }
+
 
 function debugBlobImageOutput(blob) {
   const blobURL = URL.createObjectURL(blob);

@@ -106,6 +106,7 @@ app.state = {
 app.lib = {
   imageCompression: imageCompression, // Browser Image Compression
   heicTo: window.HeicTo,              // heic-to
+  libheif: { HeifDecoder } = libheif(),            // libheif-js
   pngToIco: window.PngIcoConverter,   // PNG2ICOjs
   icoJs: window.ICO,                  // icojs
   jsZip: window.JSZip                 // JSZip

@@ -268,18 +268,15 @@ async function createCompressionOptions(currentProgress, file) {
 
   if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
-      let decodedHeicFile = await lib.heicTo({
-        blob: file,
-        type: "image/jpeg",
-        quality: 0.001,
-      });
+      const arrayBuffer = await file.arrayBuffer();
+      const heicDecoder = new lib.libheif.HeifDecoder();
+      const heicImage = heicDecoder.decode(arrayBuffer)[0]; // Provide Uint8Array or ArrayBuffer
+      const width = heicImage.get_width();
+      const height = heicImage.get_height();
 
       limitDimensionsValue = dimensionMethod === "limit" ? 
-        await getAdjustedDimensions(decodedHeicFile, ui.inputs.limitDimensions.value) : 
+        await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value) : 
         undefined;
-    }
-    else {
-      limitDimensionsValue = undefined;
     }
   }
   else {
