@@ -32,7 +32,7 @@ async function downloadAllImages() {
       throw new Error("No valid images to download");
     }
 
-    let currentZip = zip;
+    let currentZip = lib.jsZip();
     let totalSize = 0;
     let zipIndex = 1;
 
