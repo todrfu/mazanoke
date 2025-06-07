@@ -21,6 +21,7 @@ function buildOutputItemHTML({
   const itemId = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `
     <div id="output_item__${itemId}" class="image-output__item file-format--${outputFileExtension} fade-in-up" data-elevation="3">
+      <div class="image-output__item-tint fade-tint-in-out"></div>
       <img src="${thumbnailDataURL}" class="image-output__item-thumbnail" loading="lazy">
       <div class="image-output__item-text">
         <div class="image-output__item-filename">
