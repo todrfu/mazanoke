@@ -50,8 +50,9 @@ async function compressImageQueue() {
     return;
   }
 
+  // Decode and parase image to validate options.
   const options = await createCompressionOptions((p) => currentProgress(p, i, file.name), file);
-  // Preprocess image when needed (e.g., decoding or precompress image)
+  // Preprocess image when needed (e.g., decoding or precompress image).
   const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
   const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
 
@@ -128,6 +129,37 @@ async function compressImageQueue() {
       `;
     }
   }
+}
+
+async function createCompressionOptions(currentProgress, file) {
+  const compressMethod = getCheckedValue(ui.inputs.compressMethod);
+  const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
+  const maxWeight = getMaxWeight();
+  const quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
+  let { inputFileType, selectedFormat } = getFileType(file);
+
+  selectedFormat = resolveFinalFormat(inputFileType, selectedFormat);
+  const limitDimensions = await getLimitDimensions(file, dimensionMethod);
+
+  console.log("Input image file size: ", (file.size / 1024 / 1024).toFixed(3), "MB");
+
+  const options = {
+    maxSizeMB: compressMethod === "limitWeight" ? maxWeight : (file.size / 1024 / 1024).toFixed(3),
+    initialQuality: compressMethod === "quality" ? quality : undefined,
+    maxWidthOrHeight: dimensionMethod === "limit" ? limitDimensions : undefined,
+    useWebWorker: true,
+    onProgress: currentProgress,
+    preserveExif: false,
+    fileType: selectedFormat || undefined,
+    libURL: "./browser-image-compression.js",
+    alwaysKeepResolution: true,
+  };
+  if (state.controller) {
+    options.signal = state.controller.signal;
+  }
+
+  console.log("Settings:", options);
+  return options;
 }
 
 async function preProcessImage(file) {
@@ -254,77 +286,38 @@ function encodeImageRgbaToBlob(rgba, width, height, outputType = 'image/png', qu
   });
 }
 
-async function createCompressionOptions(currentProgress, file) {
-  const compressMethod = getCheckedValue(ui.inputs.compressMethod);
-  const dimensionMethod = getCheckedValue(ui.inputs.dimensionMethod);
-  const maxWeight = parseFloat(ui.inputs.limitWeight.value);
-  let { inputFileType, selectedFormat } = getFileType(file);
+async function getLimitDimensions(file, dimensionMethod) {
+  if (dimensionMethod !== "limit") return undefined;
 
-  if (isPostProcessingRequired(selectedFormat)) {
-    /**
-     * The chosen output format isn't directly supported by browsers,
-     * so compression can't be done in that format.
-     * Instead, compress using a browser-supported image type,
-     * then convert to the user-selected format in `postProcessImage()`.
-     */
-    const browserSupportedImageTypes = ["image/jpeg", "image/png", "image/webp"];
-    const isSupported = browserSupportedImageTypes.includes(inputFileType);
-    
-    selectedFormat = isSupported ? inputFileType : "image/png";
+  const limit = ui.inputs.limitDimensions.value;
+
+  if (["image/heif", "image/heic"].includes(file.type) || isHeicExt(file)) {
+    const buffer = await file.arrayBuffer();
+    const img = new lib.libheif.HeifDecoder().decode(buffer)[0];
+    return await getAdjustedDimensions({ width: img.get_width(), height: img.get_height() }, limit);
   }
 
-  quality = Math.min(Math.max(parseFloat(ui.inputs.quality.value) / 100, 0), 1);
-
-  console.log("Input image file size: ", (file.size / 1024 / 1024).toFixed(3), "MB");
-
-  let maxWeightMB = ui.inputs.limitWeightUnit.value.toUpperCase() === "KB" ? 
-    ui.inputs.limitWeight.value / 1024 : 
-    ui.inputs.limitWeight.value;
-
-  let limitDimensionsValue = undefined;
-  let desiredLimitDimensions;
-
-  if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
-    if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
-      const arrayBuffer = await file.arrayBuffer();
-      const heicDecoder = new lib.libheif.HeifDecoder();
-      const heicImage = heicDecoder.decode(arrayBuffer)[0]; // Provide Uint8Array or ArrayBuffer
-      const width = heicImage.get_width();
-      const height = heicImage.get_height();
-      desiredLimitDimensions = await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value);
-    }
-  }
-  else if (file.type === "image/tiff") {
-    const arrayBuffer = await file.arrayBuffer();
-    const ifds = lib.utif.decode(arrayBuffer);
-    lib.utif.decodeImage(arrayBuffer, ifds[0]);
-    const width = ifds[0].width;
-    const height = ifds[0].height;
-    desiredLimitDimensions = await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value);
-  }
-  else {
-    desiredLimitDimensions = await getAdjustedDimensions({ imageBlob: file }, ui.inputs.limitDimensions.value);
+  if (file.type === "image/tiff") {
+    const buffer = await file.arrayBuffer();
+    const ifds = lib.utif.decode(buffer);
+    lib.utif.decodeImage(buffer, ifds[0]);
+    return await getAdjustedDimensions({ width: ifds[0].width, height: ifds[0].height }, limit);
   }
 
-  limitDimensionsValue = (dimensionMethod === "limit") ? desiredLimitDimensions : undefined;
+  return await getAdjustedDimensions({ imageBlob: file }, limit);
+}
 
-  const options = {
-    maxSizeMB: maxWeight && compressMethod === "limitWeight" ? maxWeightMB : (file.size / 1024 / 1024).toFixed(3),
-    initialQuality: quality && compressMethod === "quality" ? quality : undefined,
-    maxWidthOrHeight: limitDimensionsValue,
-    useWebWorker: true,
-    onProgress: currentProgress,
-    preserveExif: false,
-    fileType: selectedFormat || undefined,
-    libURL: "./browser-image-compression.js",
-    alwaysKeepResolution: true,
-  };
-  if (state.controller) {
-    options.signal = state.controller.signal;
+function getMaxWeight() {
+  const weight = parseFloat(ui.inputs.limitWeight.value);
+  return ui.inputs.limitWeightUnit.value.toUpperCase() === "KB" ? weight / 1024 : weight;
+}
+
+function resolveFinalFormat(inputType, userFormat) {
+  const fallback = ["image/jpeg", "image/png", "image/webp"];
+  if (isPostProcessingRequired(userFormat)) {
+    return fallback.includes(inputType) ? inputType : "image/png";
   }
-
-  console.log("Settings:", options);
-  return options;
+  return userFormat;
 }
 
 async function generateThumbnailImage(file, dimensions) {
