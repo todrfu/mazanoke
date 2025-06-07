@@ -29,6 +29,7 @@ An outline of the project structure.
 | `ico.js`                           | Parsing ICO files type.                                                         |
 | `jszip.js`                         | Handles zipping of image files for download.                                    |
 | `png2ico.js`                       | Encoding ICO files type.                                                        |
+| ...                                | See purpose of all libraries in ATTRIBUTIONS.md                                 |
 |                                    |                                                                                 |
 | **Images (`assets/images`)**       | Static images for user interface and metatags.                                  |
 | ...                                |                                                                                 |

@@ -143,6 +143,10 @@ async function preProcessImage(file) {
     return await preProcessIco(file);
   }
 
+  if (file.type === "image/tiff" || file.type === "image/dng") {
+    return await preProcessTiff(file);
+  }
+
   return { preProcessedImage: null, preProcessedNewFileType: null };
 }
 
@@ -172,6 +176,15 @@ async function preProcessIco(file) {
   const rawImage = parsedIco[0];
   const blob = await decodeImageBufferToBlob(rawImage.buffer, "image/png", 1);
   return { preProcessedImage: blob, preProcessedNewFileType: "image/png" };
+}
+
+async function preProcessTiff(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const ifds = lib.utif.decode(arrayBuffer);
+  lib.utif.decodeImage(arrayBuffer, ifds[0]);
+  const rgba = lib.utif.toRGBA8(ifds[0]);
+  const parsedTiff = await encodeImageRgbaToBlob(rgba, ifds[0].width, ifds[0].height, "image/png", 1);
+  return { preProcessedImage: parsedTiff, preProcessedNewFileType: "image/png" };
 }
 
 async function postProcessImage(file, selectedFormat, dimensions) {
@@ -223,6 +236,21 @@ function decodeImageBufferToBlob(buffer, outputType = 'image/png', quality = 1) 
     };
 
     img.src = url;
+  });
+}
+
+function encodeImageRgbaToBlob(rgba, width, height, outputType = 'image/png', quality = 1) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imageData = new ImageData(new Uint8ClampedArray(rgba), width, height);
+    ctx.putImageData(imageData, 0, 0);
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Failed to create blob'));
+    }, outputType, quality);
   });
 }
 

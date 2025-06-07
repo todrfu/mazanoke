@@ -38,6 +38,11 @@ sed -i '' 's/^export class/class/' assets/vendor/png2ico.js
 echo "\nwindow.PngIcoConverter = PngIcoConverter;" >> assets/vendor/png2ico.js
 ```
 
+**`UTIF.js`**:
+```bash
+curl -o assets/vendor/utif.js https://raw.githubusercontent.com/photopea/UTIF.js/refs/heads/master/UTIF.js
+```
+
 **`jszip.js`**:
 ```bash
 curl -o assets/vendor/jszip.js https://raw.githubusercontent.com/Stuk/jszip/refs/heads/main/dist/jszip.min.js

@@ -30,14 +30,14 @@ MAZANOKE would not be possible without the projects listed here.
 - **License**: [MIT License](https://github.com/egy186/icojs/blob/main/LICENSE)  
 - **Source**: https://github.com/egy186/icojs
 - **Version**: v0.19.5
-- **Usage**: Parsing ICO files type.
+- **Usage**: Parsing ICO file type.
 
 ### PNG2ICOjs
 - **Author:** Luke Vo
 - **License**: [GNU General Public License v3.0](https://github.com/datvm/PNG2ICOjs/blob/master/LICENSE)  
 - **Source**: https://github.com/datvm/PNG2ICOjs
 - **Version**: 1.0.1
-- **Usage**: Encoding ICO files type.
+- **Usage**: Encoding ICO file type.
 
 ### JSZip
 - **Author:** Stuart Knightley

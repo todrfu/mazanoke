@@ -19,6 +19,8 @@ function isFileTypeSupported(fileType, file) {
     "image/jxl",
     "image/vnd.microsoft.icon",
     "image/x-icon",
+    "image/tiff",
+    "image/dng",
   ];
 
   return supportedFileTypes.includes(fileType);
@@ -52,6 +54,8 @@ function mimeToExtension(mimeType) {
     "image/jxl": "jxl",
     "image/vnd.microsoft.icon": "ico",
     "image/x-icon": "ico",
+    "image/tiff": "tiff",
+    "image/dng": "tiff",
   };
 
   return (
