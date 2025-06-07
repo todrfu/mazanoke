@@ -962,6 +962,7 @@ body:not(.subpage--output):not(.subpage--settings) .image-options-container {
 
 .image-output__empty-state {
   position: absolute;
+  top: 25%;
   margin: 0 auto;
   width: 100%;
   text-align: center;
