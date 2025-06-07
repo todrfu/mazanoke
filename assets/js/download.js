@@ -103,11 +103,13 @@ async function deleteImage(elementId) {
 }
 
 async function deleteAllImages() {
+  ui.output.content.style.overflow = "hidden";
   ui.output.content.classList.add("fade-out-shrink");
   await updateImageCounter(0, true).then( () => {
     ui.output.content.addEventListener("animationend", () => {
       ui.output.content.innerHTML = "";
       updateOutputEmptyState();
+      ui.output.content.style.overflow = "";
       ui.output.content.classList.remove("fade-out-shrink");
     }, { once: true }); 
   });
