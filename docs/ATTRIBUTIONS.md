@@ -44,7 +44,7 @@ MAZANOKE would not be possible without the projects listed here.
 - **License**: [MIT License](https://github.com/photopea/UTIF.js/blob/master/LICENSE)  
 - **Source**: https://github.com/datvm/PNG2ICOjs
 - **Version**: 3.1.0
-- **Usage**: Decoding TIFF-related file type.
+- **Usage**: Decoding TIFF-related file types.
 
 ### JSZip
 - **Author:** Stuart Knightley

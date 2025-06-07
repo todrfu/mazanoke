@@ -282,7 +282,7 @@ async function createCompressionOptions(currentProgress, file) {
     ui.inputs.limitWeight.value;
 
   let limitDimensionsValue = undefined;
-  
+  let desiredLimitDimensions;
 
   if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
@@ -291,16 +291,22 @@ async function createCompressionOptions(currentProgress, file) {
       const heicImage = heicDecoder.decode(arrayBuffer)[0]; // Provide Uint8Array or ArrayBuffer
       const width = heicImage.get_width();
       const height = heicImage.get_height();
-
-      limitDimensionsValue = dimensionMethod === "limit" ? 
-        await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value) : 
-        undefined;
+      desiredLimitDimensions = await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value);
     }
   }
-  else {
-    const desiredLimitDimensions = await getAdjustedDimensions({ imageBlob: file }, ui.inputs.limitDimensions.value);
-    limitDimensionsValue = (dimensionMethod === "limit") ? desiredLimitDimensions : undefined;
+  else if (file.type === "image/tiff") {
+    const arrayBuffer = await file.arrayBuffer();
+    const ifds = lib.utif.decode(arrayBuffer);
+    lib.utif.decodeImage(arrayBuffer, ifds[0]);
+    const width = ifds[0].width;
+    const height = ifds[0].height;
+    desiredLimitDimensions = await getAdjustedDimensions({width, height}, ui.inputs.limitDimensions.value);
   }
+  else {
+    desiredLimitDimensions = await getAdjustedDimensions({ imageBlob: file }, ui.inputs.limitDimensions.value);
+  }
+
+  limitDimensionsValue = (dimensionMethod === "limit") ? desiredLimitDimensions : undefined;
 
   const options = {
     maxSizeMB: maxWeight && compressMethod === "limitWeight" ? maxWeightMB : (file.size / 1024 / 1024).toFixed(3),

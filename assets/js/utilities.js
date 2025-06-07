@@ -231,7 +231,6 @@ function getAdjustedDimensions({ imageBlob, width, height }, desiredLimitDimensi
   // Adjusts image dimensions to prevent the short edge from being 0.
   // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.
 
-  console.log(imageBlob)
   return new Promise((resolve) => {
     const compute = (w, h) => {
       if (!w || !h) return resolve(undefined);
