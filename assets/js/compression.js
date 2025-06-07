@@ -282,6 +282,7 @@ async function createCompressionOptions(currentProgress, file) {
     ui.inputs.limitWeight.value;
 
   let limitDimensionsValue = undefined;
+  
 
   if (file.type === "image/heif" || file.type === "image/heic" || isHeicExt(file)) {
     if (getCheckedValue(ui.inputs.dimensionMethod) === "limit") {
@@ -297,9 +298,8 @@ async function createCompressionOptions(currentProgress, file) {
     }
   }
   else {
-    limitDimensionsValue = dimensionMethod === "limit" ? 
-      await getAdjustedDimensions(file, ui.inputs.limitDimensions.value) : 
-      undefined;
+    const desiredLimitDimensions = await getAdjustedDimensions({ imageBlob: file }, ui.inputs.limitDimensions.value);
+    limitDimensionsValue = (dimensionMethod === "limit") ? desiredLimitDimensions : undefined;
   }
 
   const options = {

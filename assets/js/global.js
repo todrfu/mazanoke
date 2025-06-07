@@ -116,9 +116,8 @@ app.lib = {
   imageCompression: imageCompression,     // Browser Image Compression
   heicTo: window.HeicTo,                  // heic-to
   libheif: { HeifDecoder } = libheif(),   // libheif-js
-  icoJs: window.ICO,                      // icojs
   pngToIco: window.PngIcoConverter,       // PNG2ICOjs
-  utif: UTIF,                             // UTIF
+  icoJs: window.ICO,                      // icojs
   jsZip: window.JSZip                     // JSZip
 };
 
