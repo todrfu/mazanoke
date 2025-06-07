@@ -20,8 +20,6 @@ function isFileTypeSupported(fileType, file) {
     "image/vnd.microsoft.icon",
     "image/x-icon",
     "image/tiff",
-    "image/dng",
-    "image/x-adobe-dng",
   ];
 
   return supportedFileTypes.includes(fileType);
