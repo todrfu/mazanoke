@@ -143,7 +143,7 @@ async function preProcessImage(file) {
     return await preProcessIco(file);
   }
 
-  if (file.type === "image/tiff" || file.type === "image/dng") {
+  if (file.type === "image/tiff" || file.type === "image/dng" || file.type === "image/x-adobe-dng") {
     return await preProcessTiff(file);
   }
 

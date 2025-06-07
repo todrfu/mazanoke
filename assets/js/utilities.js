@@ -21,6 +21,7 @@ function isFileTypeSupported(fileType, file) {
     "image/x-icon",
     "image/tiff",
     "image/dng",
+    "image/x-adobe-dng",
   ];
 
   return supportedFileTypes.includes(fileType);
@@ -56,6 +57,7 @@ function mimeToExtension(mimeType) {
     "image/x-icon": "ico",
     "image/tiff": "tiff",
     "image/dng": "tiff",
+    "image/x-adobe-dng": "tiff",
   };
 
   return (
