@@ -131,47 +131,47 @@ async function compressImageQueue() {
 }
 
 async function preProcessImage(file) {
-  let preProcessedImage = null;
-  let preProcessedNewFileType = null;
-
   if (file.type === "image/heic" || file.type === "image/heif" || isHeicExt(file)) {
-    // Preprocess HEIC and HEIF images.
-    // HEIC/HEIF is not natively parsable by browsers.
-    console.log('Preprocessing HEIC image...')
-
-    preProcessedImage = await lib.heicTo({
-      blob: file,
-      type: "image/jpeg",
-      quality: 0.9,
-    });
-
-    console.log("preProcessedImage: ", preProcessedImage);
-
-    preProcessedNewFileType = "image/jpeg";
+    return await preProcessHeic(file);
   }
 
   if (file.type === "image/avif") {
-    // Pre-process AVIF images.
-    // AVIF is already highly optimized and requires more lossy compression to reduce weight of file.
-    console.log('Preprocessing AVIF image...')
-
-    preProcessedImage = await lib.imageCompression(file, config.avifPreProcessOptions);
-    preProcessedNewFileType = "image/jpeg";
+    return await preProcessAvif(file);
   }
 
   if (file.type === "image/vnd.microsoft.icon" || file.type === "image/x-icon") {
-    const arrayBuffer = await file.arrayBuffer();
-
-    if (lib.icoJs.isICO(arrayBuffer)) {
-      const parsedIco = await lib.icoJs.parseICO(arrayBuffer, 'image/png');
-      const rawPngImage = parsedIco[0];
-
-      preProcessedImage = await decodePngToBlob(rawPngImage.buffer);
-      preProcessedNewFileType = "image/png";
-    }
+    return await preProcessIco(file);
   }
 
-  return { preProcessedImage, preProcessedNewFileType };
+  return { preProcessedImage: null, preProcessedNewFileType: null };
+}
+
+async function preProcessHeic(file) {
+  console.log("Preprocessing HEIC image...");
+  const image = await lib.heicTo({
+    blob: file,
+    type: "image/jpeg",
+    quality: 0.9,
+  });
+  return { preProcessedImage: image, preProcessedNewFileType: "image/jpeg" };
+}
+
+async function preProcessAvif(file) {
+  console.log("Preprocessing AVIF image...");
+  const image = await lib.imageCompression(file, config.avifPreProcessOptions);
+  return { preProcessedImage: image, preProcessedNewFileType: "image/jpeg" };
+}
+
+async function preProcessIco(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  if (!lib.icoJs.isICO(arrayBuffer)) {
+    return { preProcessedImage: null, preProcessedNewFileType: null };
+  }
+
+  const parsedIco = await lib.icoJs.parseICO(arrayBuffer, "image/png");
+  const rawImage = parsedIco[0];
+  const blob = await decodeImageBufferToBlob(rawImage.buffer, "image/png", 1);
+  return { preProcessedImage: blob, preProcessedNewFileType: "image/png" };
 }
 
 async function postProcessImage(file, selectedFormat, dimensions) {
@@ -225,27 +225,6 @@ function decodeImageBufferToBlob(buffer, outputType = 'image/png', quality = 1) 
     img.src = url;
   });
 }
-
-function rawBufferToImageBlob(rawBuffer, {width, height}, outputMime = "image/png", quality = 1) {
-  return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.createImageData(width, height);
-
-    imageData.data.set(rawBuffer);
-    ctx.putImageData(imageData, 0, 0);
-
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error('Failed to create blob'));
-    }, outputMime, quality);
-  });
-}
-
-
-
 
 async function createCompressionOptions(currentProgress, file) {
   const compressMethod = getCheckedValue(ui.inputs.compressMethod);
