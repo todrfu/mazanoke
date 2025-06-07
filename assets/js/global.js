@@ -67,7 +67,7 @@ app.config = {
   thumbnailOptions: {
     initialQuality: 0.8,
     maxWidthOrHeight: 70,
-    usecompress: true,
+    useWebWorker: true,
     preserveExif: false,
     fileType: "image/png",
     libURL: "./browser-image-compression.js",
@@ -87,6 +87,15 @@ app.config = {
   },
 };
 
+app.config.avifPreProcessOptions = {
+  initialQuality: 0.8,
+  maxWidthOrHeight: app.config.form.limitDimensions,
+  useWebWorker: true,
+  preserveExif: false,
+  fileType: "image/jpeg",
+  libURL: "./browser-image-compression.js",
+  alwaysKeepResolution: true,
+};
 
 app.state = {
   controller: null,
@@ -104,12 +113,12 @@ app.state = {
 };
 
 app.lib = {
-  imageCompression: imageCompression, // Browser Image Compression
-  heicTo: window.HeicTo,              // heic-to
-  libheif: { HeifDecoder } = libheif(),            // libheif-js
-  pngToIco: window.PngIcoConverter,   // PNG2ICOjs
-  icoJs: window.ICO,                  // icojs
-  jsZip: window.JSZip                 // JSZip
+  imageCompression: imageCompression,     // Browser Image Compression
+  heicTo: window.HeicTo,                  // heic-to
+  libheif: { HeifDecoder } = libheif(),   // libheif-js
+  pngToIco: window.PngIcoConverter,       // PNG2ICOjs
+  icoJs: window.ICO,                      // icojs
+  jsZip: window.JSZip                     // JSZip
 };
 
 const ui = app.ui;

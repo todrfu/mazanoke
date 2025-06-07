@@ -15,6 +15,14 @@ MAZANOKE would not be possible without the projects listed here.
   - Built on top of [libheif](https://github.com/strukturag/libheif) ([LGPL](https://github.com/strukturag/libheif?tab=License-1-ov-file)), [libde265](https://github.com/strukturag/libde265) ([GPLv3](https://github.com/strukturag/libde265?tab=License-1-ov-file#readme))
 - **Source**: https://github.com/hoppergee/heic-to
 - **Version**: v1.1.12
+- **Usage**: Converting from HEIC file type.
+
+### libheif-js
+- **Author:** catdad experiments 
+- **License**: [GNU Lesser General Public License v3.0](https://github.com/catdad-experiments/libheif-js/blob/master/LICENSE)
+  - Built on top of [libheif](https://github.com/strukturag/libheif) ([LGPL](https://github.com/strukturag/libheif?tab=License-1-ov-file))
+- **Source**: https://github.com/catdad-experiments/libheif-js
+- **Version**: v1.17.1
 - **Usage**: Decoding HEIC file types.
 
 ### icojs

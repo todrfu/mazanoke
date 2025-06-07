@@ -223,25 +223,6 @@ function getImageDimensions(imageInput) {
   });
 }
 
-
-/* function getAdjustedDimensions(imageBlob, desiredLimitDimensions) {
-
-  return new Promise((resolve) => {
-    getImageDimensions(imageBlob).then(({ outputImageWidth: width, outputImageHeight: height }) => {
-      if (!width || !height) {
-        resolve(undefined);
-        return;
-      }
-      const shortEdge = Math.min(width, height);
-      const longEdge = Math.max(width, height);
-      const shortEdgeMin = 1;
-      const minAllowedDimension = longEdge * (shortEdgeMin / shortEdge);
-      const limitDimensionsValue = desiredLimitDimensions > Math.ceil(minAllowedDimension) ? desiredLimitDimensions : Math.ceil(minAllowedDimension);
-      resolve(limitDimensionsValue);
-    });
-  });
-} */
-
 function getAdjustedDimensions({ imageBlob, width, height }, desiredLimitDimensions) {
   // Adjusts image dimensions to prevent the short edge from being 0.
   // Calculates the minimum long edge based on a 1px short edge while keeping aspect ratio.

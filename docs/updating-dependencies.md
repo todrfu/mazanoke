@@ -14,6 +14,11 @@ curl -o assets/vendor/browser-image-compression.js https://raw.githubusercontent
 curl -o assets/vendor/heic-to.js https://raw.githubusercontent.com/hoppergee/heic-to/refs/heads/main/dist/iife/heic-to.js
 ```
 
+**`libheif.js`**:
+```bash
+curl -o assets/vendor/libheif.js https://cdn.jsdelivr.net/npm/libheif-js/libheif/libheif.js
+```
+
 **`ico.js`**:
 ```bash
 curl -o assets/vendor/ico.js https://unpkg.com/icojs/dist/ico.js

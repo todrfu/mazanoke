@@ -135,9 +135,9 @@ async function preProcessImage(file) {
   let preProcessedNewFileType = null;
 
   if (file.type === "image/heic" || file.type === "image/heif" || isHeicExt(file)) {
-    // Pre-process HEIC and HEIF images.
+    // Preprocess HEIC and HEIF images.
     // HEIC/HEIF is not natively parsable by browsers.
-    console.log('Pre-processing HEIC image...')
+    console.log('Preprocessing HEIC image...')
 
     preProcessedImage = await lib.heicTo({
       blob: file,
@@ -153,21 +153,9 @@ async function preProcessImage(file) {
   if (file.type === "image/avif") {
     // Pre-process AVIF images.
     // AVIF is already highly optimized and requires more lossy compression to reduce weight of file.
-    console.log('Pre-processing AVIF image...')
+    console.log('Preprocessing AVIF image...')
 
-    setTimeout(() => {
-      ui.progress.text.innerHTML = `Please wait. AVIF files may take longer to prepare<span class="loading-dots">`;
-    }, 5000);
-
-    preProcessedImage = await lib.imageCompression(file, {
-      quality: 0.8,
-      fileType: "image/jpeg",
-      useWebWorker: true,
-      preserveExif: false,
-      libURL: "./browser-image-compression.js",
-      alwaysKeepResolution: true,
-    });
-
+    preProcessedImage = await lib.imageCompression(file, config.avifPreProcessOptions);
     preProcessedNewFileType = "image/jpeg";
   }
 
@@ -176,9 +164,9 @@ async function preProcessImage(file) {
 
     if (lib.icoJs.isICO(arrayBuffer)) {
       const parsedIco = await lib.icoJs.parseICO(arrayBuffer, 'image/png');
-      const rawImage = parsedIco[0];
+      const rawPngImage = parsedIco[0];
 
-      preProcessedImage = await decodePngToBlob(rawImage.buffer);
+      preProcessedImage = await decodePngToBlob(rawPngImage.buffer);
       preProcessedNewFileType = "image/png";
     }
   }
@@ -210,9 +198,9 @@ async function postProcessToIco(pngFile) {
   }
 }
 
-function decodePngToBlob(pngBuffer) {
+function decodeImageBufferToBlob(buffer, outputType = 'image/png', quality = 1) {
   return new Promise((resolve, reject) => {
-    const blob = new Blob([pngBuffer], { type: 'image/png' });
+    const blob = new Blob([buffer], { type: 'image/png' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
 
@@ -224,8 +212,9 @@ function decodePngToBlob(pngBuffer) {
       ctx.drawImage(img, 0, 0);
       canvas.toBlob((resultBlob) => {
         URL.revokeObjectURL(url);
-        resolve(resultBlob);
-      }, 'image/png');
+        if (resultBlob) resolve(resultBlob);
+        else reject(new Error('Failed to create blob'));
+      }, outputType, quality);
     };
 
     img.onerror = () => {
@@ -236,6 +225,27 @@ function decodePngToBlob(pngBuffer) {
     img.src = url;
   });
 }
+
+function rawBufferToImageBlob(rawBuffer, {width, height}, outputMime = "image/png", quality = 1) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(width, height);
+
+    imageData.data.set(rawBuffer);
+    ctx.putImageData(imageData, 0, 0);
+
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error('Failed to create blob'));
+    }, outputMime, quality);
+  });
+}
+
+
+
 
 async function createCompressionOptions(currentProgress, file) {
   const compressMethod = getCheckedValue(ui.inputs.compressMethod);
