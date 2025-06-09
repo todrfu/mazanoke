@@ -7,7 +7,7 @@ MAZANOKE would not be possible without the projects listed here.
 - **License**: [MIT License](https://github.com/Donaldcwl/browser-image-compression/blob/master/LICENSE)  
 - **Source**: https://github.com/Donaldcwl/browser-image-compression
 - **Version**: v2.0.2
-- **Usage**: Image compression
+- **Usage**: Image compression.
 
 ### heic-to
 - **Author:** Hopper Gee
@@ -51,7 +51,7 @@ MAZANOKE would not be possible without the projects listed here.
 - **License**: [GNU General Public License v3.0](https://github.com/Stuk/jszip/blob/main/LICENSE.markdown)  
 - **Source**: https://github.com/Stuk/jszip
 - **Version**: v3.10.1
-- **Usage**: Zip files
+- **Usage**: Zip files.
 
 ### Geist, Geist Mono
 - **Author:** Vercel
@@ -59,10 +59,10 @@ MAZANOKE would not be possible without the projects listed here.
 - **Source**: https://github.com/vercel/geist-font
 - **Source**: https://vercel.com/geist/icons
 - **Version**: 1.1
-- **Usage**: Fonts, icons
+- **Usage**: Fonts, icons.
 
 ### Coolicons Line Oval Icons
 - **Author:** krystonschwarze
 - **License**: [CC Attribution License](https://www.svgrepo.com/page/licensing/#CC%20Attribution)  
 - **Source**: https://www.svgrepo.com/collection/coolicons-line-oval-icons/
-- **Usage**: Icons
+- **Usage**: Icons.
