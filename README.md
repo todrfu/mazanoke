@@ -8,7 +8,7 @@
 
 
 <center>
-   <img src=".github/images/v1.1.0/featured-desktop-solo-dark.jpg" alt="mazanoke desktop screen capture dark mode" width="1200">
+   <img src=".github/images/v1.1.5/featured-desktop-solo-dark.jpg" alt="mazanoke desktop screen capture dark mode" width="1200">
 </center>
 
 ## About
@@ -29,8 +29,8 @@ Created for everyday people and designed to be shared with family and friends, i
   - Set target file size
   - Set max width/height
   - Paste images from clipboard
-  - Convert between and to `JPG`, `PNG`, `WebP`
-  - Convert from `HEIC`, `AVIF`, `GIF`, `SVG`
+  - Convert between and to `JPG`, `PNG`, `WebP`, `ICO`
+  - Convert from `HEIC`, `AVIF`, `TIFF`, `GIF`, `SVG`
 - 🔒 **Privacy-Focused**
   - Works offline
   - On-device image processing
@@ -51,6 +51,7 @@ Created for everyday people and designed to be shared with family and friends, i
         ports:
           - "3474:80"
     ```
+    Available environmental variables: [Configuration](./docs/configuration.md)
 1. Access the app at `http://localhost:3474`
 
 ### Local
@@ -70,17 +71,17 @@ Created for everyday people and designed to be shared with family and friends, i
 ## Screenshots
 
 <center>
-   <img src=".github/images/v1.1.0/featured-image-mobile-group-dark-light.jpg" alt="mazanoke mobile devices" width="1200">
+   <img src=".github/images/v1.1.5/featured-image-mobile-group-dark-light.jpg" alt="mazanoke mobile devices" width="1200">
 </center>
 
 <center>
-   <img src=".github/images/v1.1.0/featured-desktop-solo-light.jpg" alt="mazanoke desktop screen capture light mode" width="1200">
+   <img src=".github/images/v1.1.5/featured-desktop-solo-light.jpg" alt="mazanoke desktop screen capture light mode" width="1200">
 </center>
 
 |    |   |
 | :---: | :---: |
-| Dark mode<br><img src=".github/images/v1.1.0/capture-desktop-dark.jpg" alt="mazanoke dark mode" width="90%%"> | Light mode<br><img src=".github/images/v1.1.0/capture-desktop-light.jpg" alt="mazanoke light mode" width="90%%">  |
-| Settings<br><img src=".github/images/v1.1.0/capture-desktop-solo-settings-dark.jpg" alt="mazanoke settings" width="90%%">  | Download images<br><img src=".github/images/v1.1.0/capture-desktop-solo-output-dark.jpg" alt="mazanoke settings" width="90%%">  |
+| Dark mode<br><img src=".github/images/v1.1.5/capture-desktop-dark.jpg" alt="mazanoke dark mode" width="90%%"> | Light mode<br><img src=".github/images/v1.1.5/capture-desktop-light.jpg" alt="mazanoke light mode" width="90%%">  |
+| Settings<br><img src=".github/images/v1.1.5/capture-desktop-solo-settings-dark.jpg" alt="mazanoke settings" width="90%%">  | Download images<br><img src=".github/images/v1.1.5/capture-desktop-solo-output-dark.jpg" alt="mazanoke settings" width="90%%">  |
 
 ## Attributions
 - [Browser Image Compression](https://github.com/Donaldcwl/browser-image-compression)
