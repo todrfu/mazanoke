@@ -1,8 +1,25 @@
-
 async function downloadAllImages() {
   const GB = 1024 * 1024 * 1024;
   const chunkSize = 1 * GB;
   const zipFileName = appendFileNameId("mazanoke-images");
+
+  const nameCount = {};
+  const getUniqueName = (name) => {
+    if (!nameCount[name]) {
+      nameCount[name] = 1;
+      return name;
+    } else {
+      const ext = name.includes('.') ? '.' + name.split('.').pop() : '';
+      const base = ext ? name.slice(0, -ext.length) : name;
+      let newName;
+      do {
+        newName = `${base} (${nameCount[name]})${ext}`;
+        nameCount[name]++;
+      } while (nameCount[newName]);
+      nameCount[newName] = 1;
+      return newName;
+    }
+  };
 
   try {
     if (state.isDownloadingAll) return;
@@ -32,7 +49,7 @@ async function downloadAllImages() {
       throw new Error("No valid images to download");
     }
 
-    let currentZip = lib.jsZip();
+    let currentZip = new lib.jsZip();
     let totalSize = 0;
     let zipIndex = 1;
 
@@ -51,7 +68,9 @@ async function downloadAllImages() {
         zipIndex++;
       }
 
-      currentZip.file(compressedImages[i].download, validBlobs[i]);
+      const originalName = compressedImages[i].download;
+      const fileName = getUniqueName(originalName);
+      currentZip.file(fileName, validBlobs[i]);
       totalSize += fileSize;
     }
 
@@ -63,11 +82,9 @@ async function downloadAllImages() {
       const zipBlob = await currentZip.generateAsync({ type: "blob" });
       await triggerDownload(zipBlob, finalName);
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Download all images as zip failed:", error);
-  }
-  finally {
+  } finally {
     ui.actions.downloadAll.setAttribute("aria-busy", "false");
     state.isDownloadingAll = false;
   }
