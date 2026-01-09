@@ -58,6 +58,27 @@ App.i18n = {
       'process.optimizing': 'Optimizing',
       'process.preparing': 'Preparing',
       'process.done': 'Done!',
+      'process.preparing.status': 'Preparing...',
+      'process.compressing.status': 'Compressing...',
+      'error.file.tooLarge': 'The following files exceed the {maxSize}MB limit and have been skipped:\n{files}\n\nSuggestion: Please compress these files using other tools first, or process them in batches.',
+      'error.file.noValidFiles': 'No processable files. Please ensure file size does not exceed {maxSize}MB.',
+      'error.file.exceedsLimit': 'File "{fileName}" ({size}MB) exceeds the maximum limit of {maxSize}MB, skipped',
+      'error.file.largeWarning': 'Warning: File "{fileName}" ({size}MB) is large and processing may take a long time',
+      'error.unsupported.type': 'Unsupported file type: {type}. Skipping "{fileName}".',
+      'error.compression.failed': 'Compression error',
+      'error.processing.failed': 'Error processing file',
+      'error.processing.file': 'Error processing "{fileName}": {message}',
+      'error.preprocess.ico': 'ICO preprocessing error',
+      'error.preprocess.tiff': 'TIFF preprocessing error',
+      'error.canvas.timeout': 'Canvas toBlob operation timeout',
+      'error.postprocess.ico': 'Error post-processing to ICO: {message}',
+      'log.input.file': 'Input file',
+      'log.input.size': 'Input image file size',
+      'log.largeFile.autoResize': 'Large file detected ({size}MB): Auto-limiting maximum dimension to {dimension}px to avoid freezing',
+      'log.settings': 'Settings',
+      'log.preprocess.heic': 'Preprocessing HEIC image...',
+      'log.preprocess.avif': 'Preprocessing AVIF image...',
+      'log.postprocess': 'Post-processing...',
       'install.title': 'Install MAZANOKE',
       'install.feature1': 'An app shortcut is added to your device.',
       'install.feature2': 'Use even without an internet connection.',
@@ -166,6 +187,27 @@ App.i18n = {
       'process.optimizing': '最適化中',
       'process.preparing': '準備中',
       'process.done': '完了！',
+      'process.preparing.status': '準備中...',
+      'process.compressing.status': '圧縮中...',
+      'error.file.tooLarge': '以下のファイルが {maxSize}MB の制限を超えているため、スキップされました：\n{files}\n\n提案：まず他のツールでこれらのファイルを圧縮するか、バッチで処理してください。',
+      'error.file.noValidFiles': '処理可能なファイルがありません。ファイルサイズが {maxSize}MB を超えないようにしてください。',
+      'error.file.exceedsLimit': 'ファイル "{fileName}" ({size}MB) が最大制限 {maxSize}MB を超えているため、スキップされました',
+      'error.file.largeWarning': '警告: ファイル "{fileName}" ({size}MB) が大きく、処理に時間がかかる場合があります',
+      'error.unsupported.type': 'サポートされていないファイルタイプ: {type}。"{fileName}" をスキップします。',
+      'error.compression.failed': '圧縮エラー',
+      'error.processing.failed': 'ファイル処理エラー',
+      'error.processing.file': '"{fileName}" の処理中にエラー: {message}',
+      'error.preprocess.ico': 'ICO 前処理エラー',
+      'error.preprocess.tiff': 'TIFF 前処理エラー',
+      'error.canvas.timeout': 'Canvas toBlob 操作タイムアウト',
+      'error.postprocess.ico': 'ICO 後処理エラー: {message}',
+      'log.input.file': '入力ファイル',
+      'log.input.size': '入力画像ファイルサイズ',
+      'log.largeFile.autoResize': '大きなファイル検出 ({size}MB): フリーズを避けるために最大寸法を {dimension}px に自動制限',
+      'log.settings': '設定',
+      'log.preprocess.heic': 'HEIC 画像を前処理中...',
+      'log.preprocess.avif': 'AVIF 画像を前処理中...',
+      'log.postprocess': '後処理中...',
       'install.title': 'MAZANOKEをインストール',
       'install.feature1': 'アプリのショートカットがデバイスに追加されます。',
       'install.feature2': 'インターネット接続がなくても使用できます。',
@@ -220,6 +262,27 @@ App.i18n = {
       'process.optimizing': 'Optimizando',
       'process.preparing': 'Preparando',
       'process.done': '¡Listo!',
+      'process.preparing.status': 'Preparando...',
+      'process.compressing.status': 'Comprimiendo...',
+      'error.file.tooLarge': 'Los siguientes archivos exceden el límite de {maxSize}MB y se han omitido:\n{files}\n\nSugerencia: Por favor, comprima estos archivos usando otras herramientas primero, o procéselos en lotes.',
+      'error.file.noValidFiles': 'No hay archivos procesables. Asegúrese de que el tamaño del archivo no exceda {maxSize}MB.',
+      'error.file.exceedsLimit': 'El archivo "{fileName}" ({size}MB) excede el límite máximo de {maxSize}MB, omitido',
+      'error.file.largeWarning': 'Advertencia: El archivo "{fileName}" ({size}MB) es grande y el procesamiento puede tardar mucho tiempo',
+      'error.unsupported.type': 'Tipo de archivo no compatible: {type}. Omitiendo "{fileName}".',
+      'error.compression.failed': 'Error de compresión',
+      'error.processing.failed': 'Error al procesar archivo',
+      'error.processing.file': 'Error al procesar "{fileName}": {message}',
+      'error.preprocess.ico': 'Error de preprocesamiento ICO',
+      'error.preprocess.tiff': 'Error de preprocesamiento TIFF',
+      'error.canvas.timeout': 'Tiempo de espera de operación Canvas toBlob',
+      'error.postprocess.ico': 'Error al post-procesar a ICO: {message}',
+      'log.input.file': 'Archivo de entrada',
+      'log.input.size': 'Tamaño del archivo de imagen de entrada',
+      'log.largeFile.autoResize': 'Archivo grande detectado ({size}MB): Limitando automáticamente la dimensión máxima a {dimension}px para evitar congelamiento',
+      'log.settings': 'Configuración',
+      'log.preprocess.heic': 'Preprocesando imagen HEIC...',
+      'log.preprocess.avif': 'Preprocesando imagen AVIF...',
+      'log.postprocess': 'Post-procesando...',
       'install.title': 'Instalar MAZANOKE',
       'install.feature1': 'Se añade un acceso directo a la aplicación en su dispositivo.',
       'install.feature2': 'Úselo incluso sin conexión a Internet.',
@@ -333,17 +396,28 @@ App.i18n = {
   },
   
   // Get the translated text
-  getTranslation: function(key, lang) {
+  getTranslation: function(key, lang, params) {
     lang = lang || this.currentLang;
     
+    let text = '';
     if (this.translations[lang] && this.translations[lang][key]) {
-      return this.translations[lang][key];
+      text = this.translations[lang][key];
     } 
     else if (this.translations[this.defaultLang] && this.translations[this.defaultLang][key]) {
-      return this.translations[this.defaultLang][key];
+      text = this.translations[this.defaultLang][key];
+    }
+    else {
+      return key;
     }
     
-    return key;
+    // Replace parameters if provided
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(param => {
+        text = text.replace(new RegExp('\\{' + param + '\\}', 'g'), params[param]);
+      });
+    }
+    
+    return text;
   },
   
   // Add new language support
