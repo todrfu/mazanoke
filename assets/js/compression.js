@@ -13,11 +13,68 @@
  * TODO 2025-06-06: Refactor deleteImage(), downloadAllImages(), to support "undo delete" with countdown.
  */
 
+/**
+ * Image compression module
+ * Handles image compression, format conversion, and related functionality
+ */
+
+// File size limit configuration (MB)
+const MAX_FILE_SIZE_MB = 50; // Maximum file size limit (user requirement: support up to 50MB)
+const WARNING_FILE_SIZE_MB = 20; // Warning threshold
+const LARGE_FILE_AUTO_RESIZE_MB = 30; // Auto-resize threshold - files larger than this will be automatically resized
+const LARGE_FILE_MAX_DIMENSION = 4000; // Maximum dimension for large files auto-resize (pixels)
+
 function compressImage(event) {
   // Entry point for image compression
+  const files = Array.from(event.target.files);
+  
+  // Check file sizes and filter out oversized files
+  const validFiles = [];
+  const skippedFiles = [];
+  
+  for (const file of files) {
+    const fileSizeMB = file.size / 1024 / 1024;
+    
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      skippedFiles.push({ name: file.name, size: fileSizeMB });
+      console.warn(App.i18n.getTranslation('error.file.exceedsLimit', null, {
+        fileName: file.name,
+        size: fileSizeMB.toFixed(2),
+        maxSize: MAX_FILE_SIZE_MB
+      }));
+    } else if (fileSizeMB > WARNING_FILE_SIZE_MB) {
+      console.warn(App.i18n.getTranslation('error.file.largeWarning', null, {
+        fileName: file.name,
+        size: fileSizeMB.toFixed(2)
+      }));
+      validFiles.push(file);
+    } else {
+      validFiles.push(file);
+    }
+  }
+  
+  // Show alert if files were skipped
+  if (skippedFiles.length > 0) {
+    const skippedNames = skippedFiles.map(f => `"${f.name}" (${f.size.toFixed(2)}MB)`).join(', ');
+    alert(App.i18n.getTranslation('error.file.tooLarge', null, {
+      maxSize: MAX_FILE_SIZE_MB,
+      files: skippedNames
+    }));
+  }
+  
+  // Return early if no valid files
+  if (validFiles.length === 0) {
+    if (files.length > 0) {
+      alert(App.i18n.getTranslation('error.file.noValidFiles', null, {
+        maxSize: MAX_FILE_SIZE_MB
+      }));
+    }
+    return;
+  }
+  
   state.controller = new AbortController();
-  state.compressQueue = Array.from(event.target.files);
-  state.compressQueueTotal = state.compressQueue.length;
+  state.compressQueue = validFiles;
+  state.compressQueueTotal = validFiles.length;
   state.compressProcessedCount = 0;
   state.fileProgressMap = {};
   state.isCompressing = true;
@@ -40,37 +97,73 @@ async function compressImageQueue() {
   const file = state.compressQueue[0];
   const i = state.compressProcessedCount;
 
-  console.log('Input file: ', file);
+  console.log(App.i18n.getTranslation('log.input.file') + ':', file);
 
   if (!isFileTypeSupported(file.type, file)) {
-    console.error(`Unsupported file type: ${file.type}. Skipping "${file.name}".`);
+    console.error(App.i18n.getTranslation('error.unsupported.type', null, {
+      type: file.type,
+      fileName: file.name
+    }));
     ui.progress.text.innerHTML = `Unsupported file "<div class='progress-file-name'>${file.name}</div>"`;
     state.compressQueue.shift();
     await compressImageQueue();
     return;
   }
 
-  // Decode and parase image to validate options.
-  const options = await createCompressionOptions((p) => currentProgress(p, i, file.name), file);
-  // Preprocess image when needed (e.g., decoding or precompress image).
-  const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
-  const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
+  try {
+    const fileSizeMB = file.size / 1024 / 1024;
+    
+    // Use longer delay for large files to ensure UI responsiveness
+    const yieldDelay = fileSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
+    
+    // Use yieldToMain to avoid blocking main thread for long periods
+    await yieldToMain(yieldDelay);
+    
+    // Update progress display
+    if (fileSizeMB > WARNING_FILE_SIZE_MB) {
+      ui.progress.text.innerHTML = `${App.i18n.getTranslation('process.optimizing')} "<div class='progress-file-name'>${file.name}</div>" <small>(${App.i18n.getTranslation('process.preparing.status')})</small>`;
+    }
 
-  if (preProcessedImage) {
-    options.fileType = preProcessedNewFileType;
-  }
-  if (isPostProcessingRequired(selectedFormat)) {
-    options.fileType = 'image/png';
-  }
+    // Decode and parse image to validate options
+    const options = await createCompressionOptions((p) => currentProgress(p, i, file.name), file);
+    
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
+    // Preprocess image when needed (e.g., decoding or precompress image)
+    // For large files, preprocessing operations are chunked
+    const { preProcessedImage, preProcessedNewFileType } = await preProcessImage(file);
+    const selectedFormat = getCheckedValue(ui.inputs.formatSelect)
+
+    if (preProcessedImage) {
+      options.fileType = preProcessedNewFileType;
+    }
+    if (isPostProcessingRequired(selectedFormat)) {
+      options.fileType = 'image/png';
+    }
+
+    // Yield again to ensure UI responsiveness
+    await yieldToMain(yieldDelay);
+    
+    // Update progress display
+    if (fileSizeMB > WARNING_FILE_SIZE_MB) {
+      ui.progress.text.innerHTML = `${App.i18n.getTranslation('process.optimizing')} "<div class='progress-file-name'>${file.name}</div>" <small>(${App.i18n.getTranslation('process.compressing.status')})</small>`;
+    }
 
   // Perform image compression
   lib.imageCompression((preProcessedImage || file), options)
-    .then((compressedImage) =>
-      getImageDimensions(compressedImage).then((dimensions) => ({
-        image: compressedImage,
-        ...dimensions,
-      }))
-    )
+      .then((compressedImage) => {
+        // Release memory of preprocessed image
+        if (preProcessedImage && preProcessedImage !== file) {
+          if (preProcessedImage instanceof Blob && preProcessedImage.url) {
+            URL.revokeObjectURL(preProcessedImage.url);
+          }
+        }
+        return getImageDimensions(compressedImage).then((dimensions) => ({
+          image: compressedImage,
+          ...dimensions,
+        }));
+      })
     .then(({ image, outputImageWidth, outputImageHeight }) =>
       generateThumbnailImage(image, { outputImageWidth, outputImageHeight })
     )
@@ -88,7 +181,14 @@ async function compressImageQueue() {
     .then(({ postProcessedImage, thumbnailImage, outputImageWidth, outputImageHeight }) =>
       handleCompressionResult(file, postProcessedImage, thumbnailImage, outputImageWidth, outputImageHeight)
     )
-    .catch((error) => console.error(error.message))
+      .catch((error) => {
+        console.error(App.i18n.getTranslation('error.compression.failed') + ':', error.message);
+        // Display error message to user
+        ui.progress.text.innerHTML = `<div class='badge badge--error'>${App.i18n.getTranslation('error.processing.file', null, {
+          fileName: file.name,
+          message: error.message
+        })}</div>`;
+      })
     .finally(() => {
       state.compressProcessedCount++;
       state.compressQueue.shift();
@@ -100,6 +200,16 @@ async function compressImageQueue() {
         compressImageQueue();
       }
     });
+  } catch (error) {
+    console.error(App.i18n.getTranslation('error.processing.failed') + ':', error);
+    state.compressProcessedCount++;
+    state.compressQueue.shift();
+    if (state.compressProcessedCount < state.compressQueueTotal) {
+      compressImageQueue();
+    } else {
+      resetCompressionState(true);
+    }
+  }
 
   function currentProgress(p, index, fileName) {
     const overallProgress = calculateOverallProgress(
@@ -139,26 +249,41 @@ async function createCompressionOptions(currentProgress, file) {
   let { inputFileType, selectedFormat } = getFileType(file);
 
   selectedFormat = resolveFinalFormat(inputFileType, selectedFormat);
-  const limitDimensions = await getLimitDimensions(file, dimensionMethod);
+  let limitDimensions = await getLimitDimensions(file, dimensionMethod);
+  
+  const fileSizeMB = file.size / 1024 / 1024;
+  console.log(App.i18n.getTranslation('log.input.size') + ":", fileSizeMB.toFixed(3), "MB");
 
-  console.log("Input image file size: ", (file.size / 1024 / 1024).toFixed(3), "MB");
+  // For large files (over 30MB), automatically limit maximum dimensions to avoid memory issues and freezing
+  // If user hasn't set dimension limits, automatically add a reasonable limit
+  if (fileSizeMB > LARGE_FILE_AUTO_RESIZE_MB && dimensionMethod !== "limit") {
+    // Auto-limit to 4000px, a reasonable upper bound that maintains quality while avoiding freezing
+    limitDimensions = LARGE_FILE_MAX_DIMENSION;
+    console.log(App.i18n.getTranslation('log.largeFile.autoResize', null, {
+      size: fileSizeMB.toFixed(2),
+      dimension: limitDimensions
+    }));
+  }
 
   const options = {
-    maxSizeMB: compressMethod === "limitWeight" ? maxWeight : (file.size / 1024 / 1024).toFixed(3),
+    maxSizeMB: compressMethod === "limitWeight" ? maxWeight : fileSizeMB.toFixed(3),
     initialQuality: compressMethod === "quality" ? quality : undefined,
-    maxWidthOrHeight: dimensionMethod === "limit" ? limitDimensions : undefined,
-    useWebWorker: true,
+    // For large files, apply auto-limit even if user hasn't set a limit
+    maxWidthOrHeight: (dimensionMethod === "limit" ? limitDimensions : 
+                       (fileSizeMB > LARGE_FILE_AUTO_RESIZE_MB ? limitDimensions : undefined)),
+    useWebWorker: true, // Ensure Web Worker is used to avoid blocking main thread
     onProgress: currentProgress,
     preserveExif: false,
     fileType: selectedFormat || undefined,
     libURL: "./browser-image-compression.js",
-    alwaysKeepResolution: true,
+    // For large files, allow resolution adjustment to optimize performance
+    alwaysKeepResolution: fileSizeMB <= LARGE_FILE_AUTO_RESIZE_MB,
   };
   if (state.controller) {
     options.signal = state.controller.signal;
   }
 
-  console.log("Settings:", options);
+  console.log(App.i18n.getTranslation('log.settings') + ":", options);
   return options;
 }
 
@@ -183,7 +308,7 @@ async function preProcessImage(file) {
 }
 
 async function preProcessHeic(file) {
-  console.log("Preprocessing HEIC image...");
+  console.log(App.i18n.getTranslation('log.preprocess.heic'));
   const image = await lib.heicTo({
     blob: file,
     type: "image/jpeg",
@@ -193,37 +318,71 @@ async function preProcessHeic(file) {
 }
 
 async function preProcessAvif(file) {
-  console.log("Preprocessing AVIF image...");
+  console.log(App.i18n.getTranslation('log.preprocess.avif'));
   const image = await lib.imageCompression(file, config.avifPreProcessOptions);
   return { preProcessedImage: image, preProcessedNewFileType: "image/jpeg" };
 }
 
 async function preProcessIco(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  if (!lib.icoJs.isICO(arrayBuffer)) {
-    return { preProcessedImage: null, preProcessedNewFileType: null };
-  }
+  try {
+    const fileSizeMB = file.size / 1024 / 1024;
+    const yieldDelay = fileSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
+    
+    // Yield main thread for large files
+    await yieldToMain(yieldDelay);
+    
+    const arrayBuffer = await file.arrayBuffer();
+    
+    if (!lib.icoJs.isICO(arrayBuffer)) {
+      return { preProcessedImage: null, preProcessedNewFileType: null };
+    }
 
-  const parsedIco = await lib.icoJs.parseICO(arrayBuffer, "image/png");
-  const rawImage = parsedIco[0];
-  const blob = await decodeImageBufferToBlob(rawImage.buffer, "image/png", 1);
-  return { preProcessedImage: blob, preProcessedNewFileType: "image/png" };
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
+    const parsedIco = await lib.icoJs.parseICO(arrayBuffer, "image/png");
+    const rawImage = parsedIco[0];
+    const blob = await decodeImageBufferToBlob(rawImage.buffer, "image/png", 1);
+    return { preProcessedImage: blob, preProcessedNewFileType: "image/png" };
+  } catch (error) {
+    console.error(App.i18n.getTranslation('error.preprocess.ico') + ':', error);
+    throw error;
+  }
 }
 
 async function preProcessTiff(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const ifds = lib.utif.decode(arrayBuffer);
-  lib.utif.decodeImage(arrayBuffer, ifds[0]);
-  const rgba = lib.utif.toRGBA8(ifds[0]);
-  const parsedTiff = await encodeImageRgbaToBlob(rgba, ifds[0].width, ifds[0].height, "image/png", 1);
-  return { preProcessedImage: parsedTiff, preProcessedNewFileType: "image/png" };
+  try {
+    const fileSizeMB = file.size / 1024 / 1024;
+    const yieldDelay = fileSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
+    
+    // Yield main thread for large files
+    await yieldToMain(yieldDelay);
+    
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
+    const ifds = lib.utif.decode(arrayBuffer);
+    lib.utif.decodeImage(arrayBuffer, ifds[0]);
+    
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
+    const rgba = lib.utif.toRGBA8(ifds[0]);
+    const parsedTiff = await encodeImageRgbaToBlob(rgba, ifds[0].width, ifds[0].height, "image/png", 1);
+    return { preProcessedImage: parsedTiff, preProcessedNewFileType: "image/png" };
+  } catch (error) {
+    console.error(App.i18n.getTranslation('error.preprocess.tiff') + ':', error);
+    throw error;
+  }
 }
 
 async function postProcessImage(file, selectedFormat, dimensions) {
-  console.log('Post-processing...');
+  console.log(App.i18n.getTranslation('log.postprocess'));
 
   if (selectedFormat === "image/vnd.microsoft.icon" || selectedFormat === "image/x-icon") {
-    // Convert the compressed image to ICO.
+    // Convert the compressed image to ICO
     file = await postProcessToIco(file);
   }
   return { postProcessedImage: file, ...dimensions };
@@ -238,51 +397,139 @@ async function postProcessToIco(pngFile) {
     console.error(e);
     const msg = e.message;
     if (msg) {
-      alert("Error post-processing to ICO: " + (ErrorMessages[msg] ?? msg));
+      alert(App.i18n.getTranslation('error.postprocess.ico', null, {
+        message: ErrorMessages[msg] ?? msg
+      }));
     }
   }
 }
 
+/**
+ * Yield main thread control to avoid long blocking
+ * Uses requestIdleCallback or setTimeout as fallback
+ * For large file processing, uses longer delay to ensure UI responsiveness
+ */
+function yieldToMain(delay = 16) {
+  return new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        // Use setTimeout to ensure execution in next event loop
+        // Use approximately one frame time (16ms) to give browser a chance to update UI
+        setTimeout(resolve, delay);
+      }, { timeout: 50 });
+    } else {
+      // Fallback: use setTimeout, at least one frame time
+      setTimeout(resolve, delay);
+    }
+  });
+}
+
 function decodeImageBufferToBlob(buffer, outputType = 'image/png', quality = 1) {
-  return new Promise((resolve, reject) => {
-    const blob = new Blob([buffer], { type: 'image/png' });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
+  return new Promise(async (resolve, reject) => {
+    try {
+      const blob = new Blob([buffer], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      
+      // Estimate image size (based on buffer size)
+      const estimatedSizeMB = buffer.byteLength / 1024 / 1024;
+      const yieldDelay = estimatedSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
 
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob((resultBlob) => {
+      img.onload = async () => {
+        try {
+          // Yield main thread for large images
+          await yieldToMain(yieldDelay);
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          
+          // Yield main thread again to avoid Canvas operations blocking
+          await yieldToMain(yieldDelay);
+          
+          ctx.drawImage(img, 0, 0);
+          
+          // Yield main thread again to ensure drawImage completes
+          await yieldToMain(yieldDelay);
+          
+          // Wrap toBlob in Promise and add timeout handling
+          const blobPromise = new Promise((blobResolve, blobReject) => {
+            const timeout = setTimeout(() => {
+              blobReject(new Error(App.i18n.getTranslation('error.canvas.timeout')));
+            }, 120000); // Large files may need more time, increased to 120 seconds
+            
+            canvas.toBlob((resultBlob) => {
+              clearTimeout(timeout);
+              URL.revokeObjectURL(url);
+              if (resultBlob) blobResolve(resultBlob);
+              else blobReject(new Error('Failed to create blob'));
+            }, outputType, quality);
+          });
+          
+          const resultBlob = await blobPromise;
+          resolve(resultBlob);
+        } catch (error) {
+          URL.revokeObjectURL(url);
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
         URL.revokeObjectURL(url);
-        if (resultBlob) resolve(resultBlob);
-        else reject(new Error('Failed to create blob'));
-      }, outputType, quality);
-    };
+        reject(new Error('Failed to load image'));
+      };
 
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image'));
-    };
-
-    img.src = url;
+      img.src = url;
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
 function encodeImageRgbaToBlob(rgba, width, height, outputType = 'image/png', quality = 1) {
-  return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    const imageData = new ImageData(new Uint8ClampedArray(rgba), width, height);
-    ctx.putImageData(imageData, 0, 0);
-    canvas.toBlob(blob => {
-      if (blob) resolve(blob);
-      else reject(new Error('Failed to create blob'));
-    }, outputType, quality);
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Estimate image size (based on pixel count)
+      const pixelCount = width * height;
+      const estimatedSizeMB = (pixelCount * 4) / 1024 / 1024; // RGBA = 4 bytes per pixel
+      const yieldDelay = estimatedSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
+      
+      // Yield main thread for large images
+      await yieldToMain(yieldDelay);
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      
+      // Yield main thread again
+      await yieldToMain(yieldDelay);
+      
+      const imageData = new ImageData(new Uint8ClampedArray(rgba), width, height);
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Yield main thread again to ensure putImageData completes
+      await yieldToMain(yieldDelay);
+      
+      // Wrap toBlob in Promise and add timeout handling
+      const blobPromise = new Promise((blobResolve, blobReject) => {
+        const timeout = setTimeout(() => {
+          blobReject(new Error(App.i18n.getTranslation('error.canvas.timeout')));
+        }, 120000); // Large files may need more time, increased to 120 seconds
+        
+        canvas.toBlob(blob => {
+          clearTimeout(timeout);
+          if (blob) blobResolve(blob);
+          else blobReject(new Error('Failed to create blob'));
+        }, outputType, quality);
+      });
+      
+      const blob = await blobPromise;
+      resolve(blob);
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -290,15 +537,31 @@ async function getLimitDimensions(file, dimensionMethod) {
   if (dimensionMethod !== "limit") return undefined;
 
   const limit = ui.inputs.limitDimensions.value;
+  const fileSizeMB = file.size / 1024 / 1024;
+  const yieldDelay = fileSizeMB > WARNING_FILE_SIZE_MB ? 50 : 16;
 
   if (["image/heif", "image/heic"].includes(file.type) || isHeicExt(file)) {
+    // Yield main thread for large files
+    await yieldToMain(yieldDelay);
+    
     const buffer = await file.arrayBuffer();
+    
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
     const img = new lib.libheif.HeifDecoder().decode(buffer)[0];
     return await getAdjustedDimensions({ width: img.get_width(), height: img.get_height() }, limit);
   }
 
   if (file.type === "image/tiff") {
+    // Yield main thread for large files
+    await yieldToMain(yieldDelay);
+    
     const buffer = await file.arrayBuffer();
+    
+    // Yield main thread again
+    await yieldToMain(yieldDelay);
+    
     const ifds = lib.utif.decode(buffer);
     lib.utif.decodeImage(buffer, ifds[0]);
     return await getAdjustedDimensions({ width: ifds[0].width, height: ifds[0].height }, limit);
