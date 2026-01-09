@@ -18,6 +18,7 @@ App.i18n = {
       'app.title': 'MAZANOKE | Online Image Optimizer That Runs Privately in Your Browser',
       'app.description': 'Optimize images locally and privately by converting and compressing them offline in your browser. Supports JPG, PNG, WebP, HEIC, AVIF, GIF, SVG.',
       'nav.install': 'Install',
+      'nav.title': 'MAZANOKE | Image Compressor',
       'drop.title': 'Drop or paste images',
       'drop.formats': '<span>jpg</span><span>png</span><span>webp</span><span>heic</span><span>avif</span><span>gif</span><span>svg</span>',
       'button.browse': 'Browse',
@@ -70,6 +71,7 @@ App.i18n = {
     'zh': {
       'app.title': 'MAZANOKE | 在您的浏览器中私密运行的在线图像优化工具',
       'app.description': '通过在浏览器中离线转换和压缩图像，在本地和私密地优化图像。支持JPG、PNG、WebP、HEIC、AVIF、GIF、SVG。',
+      'nav.title': 'MAZANOKE | 图片压缩工具',
       'nav.install': '安装',
       'drop.title': '拖放或粘贴图像',
       'drop.formats': '<span>jpg</span><span>png</span><span>webp</span><span>heic</span><span>avif</span><span>gif</span><span>svg</span>',
@@ -123,6 +125,7 @@ App.i18n = {
     'ja': {
       'app.title': 'MAZANOKE | ブラウザでプライベートに実行されるオンライン画像最適化ツール',
       'app.description': 'ブラウザでオフラインで画像を変換・圧縮して、ローカルでプライベートに最適化します。JPG、PNG、WebP、HEIC、AVIF、GIF、SVGに対応。',
+      'nav.title': 'MAZANOKE | 画像圧縮ツール',
       'nav.install': 'インストール',
       'drop.title': '画像をドロップまたは貼り付け',
       'drop.formats': '<span>jpg</span><span>png</span><span>webp</span><span>heic</span><span>avif</span><span>gif</span><span>svg</span>',
@@ -177,6 +180,7 @@ App.i18n = {
       'app.title': 'MAZANOKE | Optimizador de imágenes en línea que se ejecuta de forma privada en su navegador',
       'app.description': 'Optimice imágenes de forma local y privada convirtiéndolas y comprimiéndolas sin conexión en su navegador. Compatible con JPG, PNG, WebP, HEIC, AVIF, GIF, SVG.',
       'nav.install': 'Instalar',
+      'nav.title': 'MAZANOKE | Compresor de imágenes',
       'drop.title': 'Suelte o pegue imágenes',
       'drop.formats': '<span>jpg</span><span>png</span><span>webp</span><span>heic</span><span>avif</span><span>gif</span><span>svg</span>',
       'button.browse': 'Explorar',
